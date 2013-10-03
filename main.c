@@ -1,3 +1,12 @@
+/*
+	cosc301 project 2
+	October, 2013
+	Contributers:
+		Carrie Burgess
+		Mac Lanphier
+		Brett Rojec
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,11 +20,16 @@
 #include <poll.h>
 #include <signal.h>
 
+char** tokenify(const char* str){
+	//break str up into appropriate tokens,
+	//and return an array of the results
+}
 
 int main(int argc, char **argv) {
-
-    printf("main.c, so lonely.  no code here yet :-(\n");
-
-    return 0;
+	char* input;
+	while(fgets(input, 255, stdin)!=NULL){
+		printf("You entered: %s\n", input);
+	}
+	return 0;
 }
 
