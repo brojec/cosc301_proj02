@@ -23,13 +23,17 @@
 char** tokenify(const char* str){
 	//break str up into appropriate tokens,
 	//and return an array of the results
+	return NULL;
 }
 
 int main(int argc, char **argv) {
-	char* input;
+	char* input = (char*) malloc(sizeof(char)*255);
+	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
-		printf("You entered: %s\n", input);
+		printf("You entered: %s (length %d) \n", input, (int)strlen(input));
+		printf(">>>");
 	}
+	printf("\n");
 	return 0;
 }
 
