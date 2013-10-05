@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	char* input = (char*) malloc(sizeof(char)*255);
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
-		printf("You entered: %s (length %d) \n", input, (int)strlen(input));
+		handle_token(tokenify(input));
 		printf(">>>");
 	}
 	printf("\n");
