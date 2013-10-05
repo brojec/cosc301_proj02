@@ -52,19 +52,46 @@ char** handle_commands(const char** arr) {
 	return NULL;
 }
 
-int num_toks(const char* str){
-	char* str2 = strdup(str); //strtok() fucks w/ input, so copy str
-	int toks = 0;
-	if(strtok(str2, ";")!=NULL){
-		toks++;
-		while(strtok(NULL, ";")!=NULL)
-			toks++;
+char* remove_whitespace(char* str){
+	int not_spaces = 0;
+	int i=0;
+	for(;str[i]!='\0';i++){
+		if(!isspace(str[i]) && str[i]!=';')
+			not_spaces++;
 	}
-	free(str2);
+	char* clearstr = (char*)malloc(sizeof(char)*(not_spaces+1));
+	int z = 0; //short for jerk Zombie
+	for(i=0;str[i]!='\0';i++){
+		if(!isspace(str[i]) && str[i]!=';'){
+			clearstr[z] = str[i];
+			z++;
+		}
+	}
+	//free(str); //Freeing the string we're passed, since this is our own personal function,
+		   //and I know I won't be needing it
+	return(clearstr);
+			
+}
+
+int num_toks(char* str){
+	str = remove_whitespace(str);
+	if(str==NULL || strlen(str)==0)
+		return 0;
+	int toks = 1;
+	char c;
+	int i = 0;
+	for(c=str[i];c!='\0';c=str[++i]){
+		if(c==';'){
+			if(str[i+1]!='\0' && str[i+1]!=';')
+				toks++;
+		}
+		if(c=='#')
+			break;
+	}
 	return toks;
 }
 
-char** tokenify(const char* str){
+char** tokenify(char* str){
 	//break str up into appropriate tokens,
 	//and return an array of the results
 	
