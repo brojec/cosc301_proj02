@@ -5,6 +5,11 @@
 		Carrie Burgess
 		Zombie bastard
 		Brett Rojec
+		
+NB:
+	We're trying to do string modifications in-place, to avoid pointer confusion
+	and memory leaks & annoying stuff.  Plus I think it's generally cleaner & 
+	no more difficult
 */
 
 #include <stdio.h>
@@ -23,16 +28,12 @@
 int parallel=0; /*B: I don't think mode() is needed, just use this global int (bool)
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
-void mode() {
-	//this will change the mode to either parallel or sequential
-	//sequential: use waitpd() call
-	//parallel: use execv and fork.... should automatically run in parallel?
-}
 
 void exit() {
 	//exit normally (also, this may not need its own function)
 	exit(0);
 }
+
 
 char** handle_commands(const char** arr) {
 	//C: we can definitely rename this...
@@ -52,30 +53,41 @@ char** handle_commands(const char** arr) {
 	return NULL;
 }
 
-char* remove_whitespace(char* str){
-	int not_spaces = 0;
-	int i=0;
-	for(;str[i]!='\0';i++){
-		if(!isspace(str[i]) && str[i]!=';')
-			not_spaces++;
-	}
-	char* clearstr = (char*)malloc(sizeof(char)*(not_spaces+1));
-	int z = 0; //short for jerk Zombie
-	for(i=0;str[i]!='\0';i++){
-		if(!isspace(str[i]) && str[i]!=';'){
-			clearstr[z] = str[i];
-			z++;
-		}
-	}
-	//free(str); //Freeing the string we're passed, since this is our own personal function,
-		   //and I know I won't be needing it
-	return(clearstr);
-			
+//Brett
+int is_space_or_semi(char target){
+	return isspace(target) || target==';';
 }
 
+//Brett & Carrie
+void remove_whitespace(char* str){ //something doesn't work yet
+	//removes leading & trailing whitespaces and ';'s in str in-place. 
+	char* strcpy = strdup(str);
+	int first_char = 0; //index of first non semicolon or whitespace character
+	int last_char = 0; //index of the last non semicolon or whitespace character
+	int i=0;
+	for(;str[i]!='\0';i++){
+		if(!is_space_or_semi(str[i])){
+			if(!first_char)
+				first_char = i;
+			last_char = i;
+		}
+	}
+	if(first_char==last_char)
+		str[first_char] = '\0';
+		return;
+	int z = 0; //short for jerk Zombie
+	for(i=first_char;i<=last_char;i++){
+		str[z] = strcpy[i];
+		z++;
+	}
+	str[z] = '\0';
+	free(strcpy);
+}
+
+//Brett & Carrie
 int num_toks(char* str){
-	str = remove_whitespace(str);
-	if(str==NULL || strlen(str)==0)
+	remove_whitespace(str);
+	if(str==NULL || strlen(str)==0 || str[0]=='#')
 		return 0;
 	int toks = 1;
 	char c;
@@ -91,7 +103,19 @@ int num_toks(char* str){
 	return toks;
 }
 
+//Carrie
+void nullcomment(char* str) {
+	int i = 0;
+	for(;str[i]!='\0';i++) {
+		if(str[i]=='#') {
+			str[i]='\0';
+			break;
+		}
+	}
+}
+
 char** tokenify(char* str){
+	nullcomment(str);
 	//break str up into appropriate tokens,
 	//and return an array of the results
 	
@@ -99,6 +123,7 @@ char** tokenify(char* str){
 	
 	//might want to reuse code...
 	printf("number of tokens in %s: %d\n", str, num_toks(str));
+	
 	
 	return NULL;
 }
@@ -113,6 +138,16 @@ int main(int argc, char **argv) {
 		printf(">>>");
 	}
 	printf("\n");
+	free(input);
 	return 0;
 }
 
+
+/*
+Journal entry 1:
+	It's day 1 of the zombie attacks.  The infestation has started on campus, and I'm afraid one of our coding teammates was... was infected.  We don't know what to do.  Also, all my boyfriend does is think about the code, instead of surviving the goddamn apocalypse.  
+	Anyway....we have food, for survival.  Like indian curry.  (Shows we are real legit survivors).  We have weapons for protection; our brightly colored nerf guns will surly spark fear in both the zombie's brains and the brains they are feasting on (those turning zombie).  We've decided the only alternate form of attack is to add side remarks in our code commenting.  Other then that... well, let's just hope we find the cure, and hope that the Zombies' computer viruses aren't as virulent as their biological ones.  
+	We must go and gather our wits.  We have a lot of work to do, in a very short period of time.  And an apocalypse to think about on the side.
+	
+	-Survivors out.
+*/
