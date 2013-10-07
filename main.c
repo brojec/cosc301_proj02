@@ -35,7 +35,7 @@ void exit() {
 }
 
 
-char** handle_commands(const char** arr) {
+char** handle_commands(char** arr) {
 	//C: we can definitely rename this...
 	//B: I did, I called it handle_commands() in main().
 	
@@ -59,35 +59,42 @@ int is_space_or_semi(char target){
 }
 
 //Brett & Carrie
-void remove_whitespace(char* str){ //something doesn't work yet
+void remove_whitespace(char* str){
 	//removes leading & trailing whitespaces and ';'s in str in-place. 
-	char* strcpy = strdup(str);
 	int first_char = 0; //index of first non semicolon or whitespace character
 	int last_char = 0; //index of the last non semicolon or whitespace character
+	int seen_char = 0;
 	int i=0;
+	printf("before whitespace removal: '%s'\n",str);
 	for(;str[i]!='\0';i++){
 		if(!is_space_or_semi(str[i])){
-			if(!first_char)
+			if(!seen_char){
 				first_char = i;
+				seen_char = 1;
+			}
 			last_char = i;
 		}
 	}
-	if(first_char==last_char)
+	printf("first_char: %d\n",first_char);
+	printf("last_char: %d\n",last_char);
+	printf("strlen(str): %d\n",strlen(str));
+	
+	if(first_char==last_char && !seen_char){
 		str[first_char] = '\0';
 		return;
+	}
 	int z = 0; //short for jerk Zombie
 	for(i=first_char;i<=last_char;i++){
-		str[z] = strcpy[i];
+		str[z] = str[i];
 		z++;
 	}
 	str[z] = '\0';
-	free(strcpy);
+	printf("after whitespace removal: '%s'\n",str);
 }
 
 //Brett & Carrie
 int num_toks(char* str){
-	remove_whitespace(str);
-	if(str==NULL || strlen(str)==0 || str[0]=='#')
+	if(str==NULL || strlen(str)==0)
 		return 0;
 	int toks = 1;
 	char c;
@@ -97,13 +104,16 @@ int num_toks(char* str){
 			if(str[i+1]!='\0' && str[i+1]!=';')
 				toks++;
 		}
-		if(c=='#')
-			break;
 	}
 	return toks;
 }
 
 //Carrie
+/*
+Takes a string str and replaces the first '#' character 
+with a null-terminator, efectively chopping off the '#'
+and everything after it.  
+*/
 void nullcomment(char* str) {
 	int i = 0;
 	for(;str[i]!='\0';i++) {
@@ -116,12 +126,10 @@ void nullcomment(char* str) {
 
 char** tokenify(char* str){
 	nullcomment(str);
-	//break str up into appropriate tokens,
-	//and return an array of the results
+	remove_whitespace(str);
+	int num_toks = num_toks(str);
+	char** cmds = (char**)malloc(sizeof(char*)*num_toks);
 	
-	//string should include no tabs/ spaces //B: why?
-	
-	//might want to reuse code...
 	printf("number of tokens in %s: %d\n", str, num_toks(str));
 	
 	
@@ -131,8 +139,6 @@ char** tokenify(char* str){
 int main(int argc, char **argv) {
 	char* input = (char*) malloc(sizeof(char)*255);
 	printf(">>>");
-	//C: might want another while loop to recursively keep asking user what wants
-	//until get EOF/ ctrl+D signal <--that's what this does ~Brett
 	while(fgets(input, 255, stdin)!=NULL){
 		handle_commands(tokenify(input));
 		printf(">>>");
