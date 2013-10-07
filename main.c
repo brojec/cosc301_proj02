@@ -127,67 +127,37 @@ void nullcomment(char* str) {
 char** tokenify(char* str){
 	nullcomment(str);
 	remove_whitespace(str);
-	int num_toks = num_toks(str);
-	char** cmds = (char**)malloc(sizeof(char*)*num_toks);
+	int tokCount = num_toks(str);
+	char** cmds = (char**)malloc(sizeof(char*)*tokCount);
 	
-	printf("number of tokens in %s: %d\n", str, num_toks(str));
+	printf("number of tokens in %s: %d\n", str, tokCount);
 	
 	
 	
-	const char* sep = " \t\n";
+	const char* sep = ";\n";
 	char* tmp;
 	char* s = strdup(str);
 	char* word= strtok_r(s,sep,&tmp);
-	//int charCount = 0;
-	int pointCount = 1;
+	int charCount;
+	int cmdCount = 1;
+	//int pointCount = 1;
 	for(; word != NULL; word = strtok_r(NULL,sep,&tmp)){
+		charCount = 0;
 		int i;		
-		int test = 1;
-		for(i = 0; i < strlen(word); i++){ //Check if word is an integer
-			if(isdigit(word[i]) == 0) {
-				test = 0;
-			}
+		for(i = 0; i < strlen(word); i++){ 
+			charCount++;
 		}
-		//charCount += strlen(word);
-		//charCount ++;
-		if(test == 1){ //If word is an integer, make room for it
-			pointCount ++;
+		char* command = (char*)malloc(charCount*sizeof(char));
+		for(i = 0; i < strlen(word); i++){ 
+			command[i] = word[i];
 		}
+		command[strlen(word)] = '\n';
+		cmds[cmdCount] = command;
+		cmdCount++;
+
 	}
 	free(s);
-	int* pointArray = (int*) malloc(pointCount*sizeof(int));
-	pointArray[0] = (int)malloc(sizeof(int));
-	int pointInd = 1;
-	int intCount = 0;
-	s = strdup(str);
-	word = strtok_r(s,sep,&tmp);
-	for(; word != NULL && strcmp(word,"#") != 0; word = strtok_r(NULL,sep,&tmp)){
-		int i = 0;		
-		int test = 1;
-		int isNeg;
-		if(word[0]=='-'){
-			isNeg=0;
-			i++;
-		}
-		for(; i < strlen(word); i++){ //Check if word is an integer
-			if(isdigit(word[i]) == 0) {
-				test = 0;
-				//printf("%s\n",word);
-			}
-		}
-		if(test == 1){ //If word is an integer, add it to the list
-			//printf("\n%s",word);
-			int num = atoi(word);
-			pointArray[pointInd] = (int) malloc(sizeof(int));
-			pointArray[pointInd] = num;
-			pointInd ++;
-			intCount ++;
-		}
-	}
-	pointArray[0] = intCount;
-	free(s);
-	//printf("\nWe make at least one array");
-	return pointArray;
+	return cmds;
 
 }
 
