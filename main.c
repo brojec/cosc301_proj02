@@ -3,7 +3,7 @@
 	October, 2013
 	Contributers:
 		Carrie Burgess
-		Zombie bastard
+		Zombie bastard (Mac Lanphier)
 		Brett Rojec
 		
 NB:
@@ -125,7 +125,62 @@ char** tokenify(char* str){
 	printf("number of tokens in %s: %d\n", str, num_toks(str));
 	
 	
-	return NULL;
+	
+	const char* sep = " \t\n";
+	char* tmp;
+	char* s = strdup(str);
+	char* word= strtok_r(s,sep,&tmp);
+	//int charCount = 0;
+	int pointCount = 1;
+	for(; word != NULL; word = strtok_r(NULL,sep,&tmp)){
+		int i;		
+		int test = 1;
+		for(i = 0; i < strlen(word); i++){ //Check if word is an integer
+			if(isdigit(word[i]) == 0) {
+				test = 0;
+			}
+		}
+		//charCount += strlen(word);
+		//charCount ++;
+		if(test == 1){ //If word is an integer, make room for it
+			pointCount ++;
+		}
+	}
+	free(s);
+	int* pointArray = (int*) malloc(pointCount*sizeof(int));
+	pointArray[0] = (int)malloc(sizeof(int));
+	int pointInd = 1;
+	int intCount = 0;
+	s = strdup(str);
+	word = strtok_r(s,sep,&tmp);
+	for(; word != NULL && strcmp(word,"#") != 0; word = strtok_r(NULL,sep,&tmp)){
+		int i = 0;		
+		int test = 1;
+		int isNeg;
+		if(word[0]=='-'){
+			isNeg=0;
+			i++;
+		}
+		for(; i < strlen(word); i++){ //Check if word is an integer
+			if(isdigit(word[i]) == 0) {
+				test = 0;
+				//printf("%s\n",word);
+			}
+		}
+		if(test == 1){ //If word is an integer, add it to the list
+			//printf("\n%s",word);
+			int num = atoi(word);
+			pointArray[pointInd] = (int) malloc(sizeof(int));
+			pointArray[pointInd] = num;
+			pointInd ++;
+			intCount ++;
+		}
+	}
+	pointArray[0] = intCount;
+	free(s);
+	//printf("\nWe make at least one array");
+	return pointArray;
+
 }
 
 int main(int argc, char **argv) {
