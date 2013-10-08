@@ -83,6 +83,7 @@ void remove_whitespace(char* str){
 		str[first_char] = '\0';
 		return;
 	}
+	
 	int z = 0; //short for jerk Zombie
 	for(i=first_char;i<=last_char;i++){
 		str[z] = str[i];
@@ -127,8 +128,8 @@ void nullcomment(char* str) {
 char** tokenify(char* str){
 	nullcomment(str);
 	remove_whitespace(str);
-	int num_toks = num_toks(str);
-	char** cmds = (char**)malloc(sizeof(char*)*num_toks);
+	int ntoks = num_toks(str);
+	char** cmds = (char**)malloc(sizeof(char*)*ntoks);
 	
 	printf("number of tokens in %s: %d\n", str, num_toks(str));
 	
