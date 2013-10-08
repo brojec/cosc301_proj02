@@ -25,57 +25,15 @@ NB:
 #include <poll.h>
 #include <signal.h>
 
-int parallel=0; /*B: I don't think mode() is needed, just use this global int (bool)
+int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
-
-void exit() {
-	//exit normally (also, this may not need its own function)
-	exit(0);
-}
-
-
-char** handle_commands(char** arr) {
-		//if 'mode' or 'exit', call own code (although they don't take priority
-		//over code that was before it on same line)
-		//make sure to check character after 'mode' to see if either a 's', 'p'
-		//or says 'parallel' or 'sequential'
-	//for rest, check if command/process, or if an option (ex -c)
-	//use execv (?) to make process work*/
-	int exit? = 0;
-	char mode? = '\0';
-	int i = 0;
-	while(arr[i] != NULL){
-		remove_whitespace(arr[i]);
-		if(strcmp(arr[i],"exit") == 0){
-			exit? = 1;
-		}
-		else if((strncmp(arr[i],"mode",4) == 0){
-			if(strlen(arr[i]) == 4){
-				mode? = 'd';
-			}
-			else if(arr[i][5] == 'p'){
-				mode? = 'p';
-			}
-			else if(arr[i][5] == 's'){
-				mode? = 's';
-			}
-			else{
-				printf("\nyou did something wrong... YOU FOOL");
-			}
-		}
-		else{
-			execv
-		}
-	}
-	
-	return NULL;
-}
 
 //Brett
 int is_space_or_semi(char target){
 	return isspace(target) || target==';';
 }
+
 
 //Brett & Carrie
 void remove_whitespace(char* str){
@@ -106,6 +64,51 @@ void remove_whitespace(char* str){
 	}
 	str[z] = '\0';
 }
+
+//Brett
+/*
+Takes a char* token from tokenify() and cleans it up so that it can be easily used by execv() and handle_commands().  Returns an array of chars containing the program path & all options.  
+*/
+char** parse_tokens(char* token){
+	remove_whitespace(token);
+	
+
+}
+
+void handle_commands(char** arr) {
+		//if 'mode' or 'exit', call own code (although they don't take priority
+		//over code that was before it on same line)
+		//make sure to check character after 'mode' to see if either a 's', 'p'
+		//or says 'parallel' or 'sequential'
+	//for rest, check if command/process, or if an option (ex -c)
+	//use execv (?) to make process work*/
+	int exit = 0;
+	char mode = '\0';
+	int i = 0;
+	while(arr[i] != NULL){
+		remove_whitespace(arr[i]);
+		if(strcmp(arr[i],"exit") == 0){
+			exit = 1;
+		}
+		else if(strncmp(arr[i],"mode",4) == 0){
+			//B: Changed this block so that default is displaying mode, 
+			//   to fit w/ project description
+			if(arr[i][5] == 'p'){
+				mode = 'p';
+			}
+			else if(arr[i][5] == 's'){
+				mode = 's';
+			}
+			else{
+				mode = 'd';
+			}
+		}
+		else{
+			//execv
+		}
+	}
+}
+
 
 //Brett & Carrie
 int num_toks(char* str){
@@ -178,7 +181,13 @@ char** tokenify(char* str){
 
 }
 
+//Brett
 int main(int argc, char **argv) {
+	printf("argc: %d\n", argc);
+	int i=0;
+	for(;i<argc;i++){
+		printf("argument %d: %s\n",i,argv[i]);
+	}
 	char* input = (char*) malloc(sizeof(char)*255);
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
