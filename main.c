@@ -65,7 +65,6 @@ void remove_whitespace(char* str){
 	int last_char = 0; //index of the last non semicolon or whitespace character
 	int seen_char = 0;
 	int i=0;
-	printf("before whitespace removal: '%s'\n",str);
 	for(;str[i]!='\0';i++){
 		if(!is_space_or_semi(str[i])){
 			if(!seen_char){
@@ -75,9 +74,6 @@ void remove_whitespace(char* str){
 			last_char = i;
 		}
 	}
-	printf("first_char: %d\n",first_char);
-	printf("last_char: %d\n",last_char);
-	printf("strlen(str): %d\n",strlen(str));
 	
 	if(first_char==last_char && !seen_char){
 		str[first_char] = '\0';
@@ -90,7 +86,6 @@ void remove_whitespace(char* str){
 		z++;
 	}
 	str[z] = '\0';
-	printf("after whitespace removal: '%s'\n",str);
 }
 
 //Brett & Carrie
