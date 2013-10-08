@@ -36,19 +36,38 @@ void exit() {
 
 
 char** handle_commands(char** arr) {
-	//C: we can definitely rename this...
-	//B: I did, I called it handle_commands() in main().
-	
-	/*C:
-	//this should take in an array of pointers from tokenify
-	//first, comb through to find comments.  Change comment to null character
-	//next, go through tokens, break into commands based on semicolons 
 		//if 'mode' or 'exit', call own code (although they don't take priority
 		//over code that was before it on same line)
 		//make sure to check character after 'mode' to see if either a 's', 'p'
 		//or says 'parallel' or 'sequential'
 	//for rest, check if command/process, or if an option (ex -c)
-	use execv (?) to make process work*/
+	//use execv (?) to make process work*/
+	int exit? = 0;
+	char mode? = '\0';
+	int i = 0;
+	while(arr[i] != NULL){
+		remove_whitespace(arr[i]);
+		if(strcmp(arr[i],"exit") == 0){
+			exit? = 1;
+		}
+		else if((strncmp(arr[i],"mode",4) == 0){
+			if(strlen(arr[i]) == 4){
+				mode? = 'd';
+			}
+			else if(arr[i][5] == 'p'){
+				mode? = 'p';
+			}
+			else if(arr[i][5] == 's'){
+				mode? = 's';
+			}
+			else{
+				printf("\nyou did something wrong... YOU FOOL");
+			}
+		}
+		else{
+			execv
+		}
+	}
 	
 	return NULL;
 }
@@ -84,7 +103,7 @@ void remove_whitespace(char* str){
 		return;
 	}
 	
-	int z = 0; //short for jerk Zombie
+	int z = 0; 
 	for(i=first_char;i<=last_char;i++){
 		str[z] = str[i];
 		z++;
@@ -130,7 +149,7 @@ char** tokenify(char* str){
 	remove_whitespace(str);
 
 	int tokCount = num_toks(str);
-	char** cmds = (char**)malloc(sizeof(char*)*tokCount);
+	char** cmds = (char**)malloc(sizeof(char*)*(tokCount+1));
 
 	
 	printf("number of tokens in %s: %d\n", str, tokCount);
@@ -142,8 +161,7 @@ char** tokenify(char* str){
 	char* s = strdup(str);
 	char* word= strtok_r(s,sep,&tmp);
 	int charCount;
-	int cmdCount = 1;
-	//int pointCount = 1;
+	int cmdCount = 0;
 	for(; word != NULL; word = strtok_r(NULL,sep,&tmp)){
 		charCount = 0;
 		int i;		
@@ -160,6 +178,7 @@ char** tokenify(char* str){
 
 	}
 	free(s);
+	cmds[cmdCount] = NULL;
 	return cmds;
 
 }
@@ -185,3 +204,11 @@ Journal entry 1:
 	
 	-Survivors out.
 */
+
+
+/*
+Braaaaaaaaaiiiiiiiiiiiiiiins
+
+	-Zombies out
+*/
+
