@@ -75,7 +75,51 @@ char** parse_tokens(char* token){
 
 }
 
-Brett and Mac
+//Carrie: haven't tested yet
+void run_command_s(char ** arr_for exec) { //sequential:
+	//this will have been malloced in parse_tokens
+	//first entry should be path name.  Following entries will be options.
+	pid_t child_pid;
+	int child_status;
+	child_pid = fork();
+	if(child_pid == 0) { //if child:
+		execv(arr_for_exec[0], arr_for_exec);
+		//if execv returns, that means there was an error
+		printf("Error: Invalid Command\n");
+		exit(0);
+	}
+	else {
+		pid_t tpid = waitpid(&child_status); //wait until child is done
+		if(tpid !=child_pid) { //if not same, soemthing went wrong
+			printf("Error with \s\n", arr_for_exec[0]);
+		}
+	}
+}
+
+//Carrie: haven't tested yet
+
+//Question: I want to access the address of child_Status.  Should I pass back the int, or a pointer?
+int child_status run_command_p(char ** arr_for_exec) { //parallel:
+	//this will have been malloced in parse_tokens
+	//first entry should be path name.  Following entries will be options.
+	pid_t child_pid;
+	int child_status;
+	child_pid = fork();
+	if(child_pid == 0) {
+		execv(arr_for_Exec[0], arr_for_exec);
+		//if execv returns, that means there was an error
+		printf("Error: Invalid Command\n");
+		exit(0);
+	}
+	else {
+		pid_t tpid = waitpid(&child_status, WNOHANG); //returns immediately
+		if(tpid == -1) {
+			printf("Error with \s\n", arr_for_exec[0]);
+		}
+	}
+}
+
+//Brett and Mac and Carrie
 void handle_commands(char** arr) {
 		//if 'mode' or 'exit', call own code (although they don't take priority
 		//over code that was before it on same line)
@@ -86,8 +130,18 @@ void handle_commands(char** arr) {
 	int exit = 0;
 	char mode = '\0';
 	int i = 0;
-	char ** arr_for_exec; //this will have been malloced in parse_tokens
-	//first entry should be path name.  Following entries will be options.
+	int tofree = 0;
+	if(parallel !=0) { //if running in parallel: doing in if statement so don't needlessly
+	//malloc any space.  Variable tofree is freed at bottom if we enter this if statement
+		int j = 0;
+		while(arr[j] != NULL) { //C: I just need a count of how many commands there are
+			j++;
+		}
+		(int *) checkarr = (int *) malloc(sizeof(int)*j); /*this will be used to keep
+ 		track of which processes are done for parallel */
+ 		int tofree = 1;
+ 		int k = 0;
+ 	}	
 	while(arr[i] != NULL){
 		remove_whitespace(arr[i]);
 		if(strcmp(arr[i],"exit") == 0){
@@ -110,15 +164,26 @@ void handle_commands(char** arr) {
 			}
 		}
 		else{
-			arr_for_exec = parse_tokens(arr[i]);
-			if(parallel == 0) {
-				//C: I might have found some code online for this.
+			char** arr_for_exec = parse_tokens(arr[i]);
+			if(parallel == 0) { //if running sequentially
+				run_command_s(arr_for_exec);
 			}
-			else {
-				
+			else { //if running parallel
+				//created an array of ints as long as num of entries
+				//have waitpid for each entry.  Once all of them are 0, can continue
+				child_status = run_command_p(arr_for_exec);
+				checkarr[i] = child_status; //this fills checkarr with child_statuses
 			}
-			//execv
+			free(arr_for_exec);
 		}	
+	}
+	int count = 0;
+	while(checkarr[count] != NULL) {
+		pid_t tpid = wait(&checkarr[count]); //this SHOULD check that they are all done
+		if(tpid == -1) { //if there was an error
+			printf("Error occured. \n");
+		}
+		count++;			
 	}
 	if(mode == 'p') {
 		parallel = 1; //global variable indicates operating in parallel
@@ -133,8 +198,10 @@ void handle_commands(char** arr) {
 		else {
 			printf("The mode is currently parallel.\n");
 		}
+	}
+	if(tofree == 1) {
+		free(checkarr);	
 	}	
-		
 }
 
 
