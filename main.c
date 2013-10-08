@@ -75,6 +75,7 @@ char** parse_tokens(char* token){
 
 }
 
+Brett and Mac
 void handle_commands(char** arr) {
 		//if 'mode' or 'exit', call own code (although they don't take priority
 		//over code that was before it on same line)
@@ -85,28 +86,55 @@ void handle_commands(char** arr) {
 	int exit = 0;
 	char mode = '\0';
 	int i = 0;
+	char ** arr_for_exec; //this will have been malloced in parse_tokens
+	//first entry should be path name.  Following entries will be options.
 	while(arr[i] != NULL){
 		remove_whitespace(arr[i]);
 		if(strcmp(arr[i],"exit") == 0){
 			exit = 1;
 		}
-		else if(strncmp(arr[i],"mode",4) == 0){
+		else if(strncasecmp(arr[i],"mode",4) == 0){
 			//B: Changed this block so that default is displaying mode, 
-			//   to fit w/ project description
-			if(arr[i][5] == 'p'){
+			//   to fit w/ project description 
+			if(strcasecmp(arr[i][5], "p") ==0) {
+			//if(arr[i][5] == 'p'){
 				mode = 'p';
+				
 			}
-			else if(arr[i][5] == 's'){
-				mode = 's';
+			else if(strcasecmp(arr[i][5], "s") == 0) {
+			//else if(arr[i][5] == 's'){
+				mode = 's'; 
 			}
 			else{
 				mode = 'd';
 			}
 		}
 		else{
+			arr_for_exec = parse_tokens(arr[i]);
+			if(parallel == 0) {
+				//C: I might have found some code online for this.
+			}
+			else {
+				
+			}
 			//execv
-		}
+		}	
 	}
+	if(mode == 'p') {
+		parallel = 1; //global variable indicates operating in parallel
+	}
+	else if(mode == 's') {
+		parallel = 0; //global variable indicates operating sequentially
+	}
+	else if(mode== 'd') {
+		if(parallel == 0) {
+			printf("The mode is currently sequential.\n");
+		}
+		else {
+			printf("The mode is currently parallel.\n");
+		}
+	}	
+		
 }
 
 
