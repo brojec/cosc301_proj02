@@ -75,6 +75,7 @@ char** parse_tokens(char* token){
 
 }
 
+/*
 //Carrie: haven't tested yet
 void run_command_s(char ** arr_for exec) { //sequential:
 	//this will have been malloced in parse_tokens
@@ -99,6 +100,7 @@ void run_command_s(char ** arr_for exec) { //sequential:
 //Carrie: haven't tested yet
 
 //Question: I want to access the address of child_Status.  Should I pass back the int, or a pointer?
+
 int child_status run_command_p(char ** arr_for_exec) { //parallel:
 	//this will have been malloced in parse_tokens
 	//first entry should be path name.  Following entries will be options.
@@ -118,6 +120,7 @@ int child_status run_command_p(char ** arr_for_exec) { //parallel:
 		}
 	}
 }
+*/
 
 //Brett and Mac and Carrie
 void handle_commands(char** arr) {
@@ -138,7 +141,7 @@ void handle_commands(char** arr) {
 			j++;
 		}
 		(int *) checkarr = (int *) malloc(sizeof(int)*j); /*this will be used to keep
- 		track of which processes are done for parallel */
+ 						track of which processes are done for parallel */
  		int tofree = 1;
  		int k = 0;
  	}	
@@ -151,12 +154,10 @@ void handle_commands(char** arr) {
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
 			if(strcasecmp(arr[i][5], "p") ==0) {
-			//if(arr[i][5] == 'p'){
 				mode = 'p';
 				
 			}
 			else if(strcasecmp(arr[i][5], "s") == 0) {
-			//else if(arr[i][5] == 's'){
 				mode = 's'; 
 			}
 			else{
