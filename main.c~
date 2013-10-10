@@ -62,11 +62,16 @@ Delete child from linked list
 		printf("There are no processes currently running.\n");
 	}
 	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
+<<<<<<< HEAD
 	printf("\nCheck is %d",check);
 	printf("\n");
 	if(check == -1) {
 		printf("\nError with child");
 		free(curr);
+=======
+	if(check == -1) {
+		printf("Error with child");
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	else if(check != 0) {
 		temp = head;
@@ -75,9 +80,13 @@ Delete child from linked list
 		free(temp);
 	}
 	while(curr->next != NULL) {
+<<<<<<< HEAD
 		//printf("\nWaiting for SOMETHING");
 		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
 		printf("\nCheck is %d",check);  //This apparently doesnt happen?
+=======
+		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 		if(curr->next->next != NULL) { //if in middle
 			if(check == -1) { //if error
 				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
@@ -237,6 +246,7 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 					printf("Error: Invalid Command\n");
 					exit(0);
 				}
+<<<<<<< HEAD
 				newnode->arr_for_exec = arr_for_exec;
 				newnode->child_pid = child_pid;
 				newnode->child_status = &child_status;
@@ -248,13 +258,29 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 					newnode -> next = head;
 					head = newnode;
 				}
+=======
+			newnode->arr_for_exec = arr_for_exec;
+			newnode->child_pid = child_pid;
+			newnode->child_status = &child_status;
+			if(head == NULL) {
+				head = newnode;
+				head -> next = NULL;
+			}
+			else{
+				newnode -> next = head;
+				head = newnode;
+			}
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 			//need to add node to an existing linked list....
 			}
 		}
 		free(arr_for_exec); //*** should I be doing this here?
 		i++;
 	}
+<<<<<<< HEAD
 	//printf("\nGoing to check_process_p with PID of %d",child_pid);
+=======
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	check_process_p(head);
 	
 	
@@ -291,8 +317,13 @@ void handle_commands(char** arr, struct node * head) {
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
 		//	printf("Entered mode else if statement.\n");
+<<<<<<< HEAD
 			printf("\narr_for_exec[0] is %s", arr_for_exec[0]);
 			printf("\narr_for_exec[1] is %s", arr_for_exec[1]);
+=======
+			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
+			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 
 			if(arr_for_exec[1] != NULL) {
 				if(strcasecmp(arr_for_exec[1], "p") ==0 || strcasecmp(arr_for_exec[1], "parallel") ==0) {
@@ -310,11 +341,19 @@ void handle_commands(char** arr, struct node * head) {
 			}
 		}
 		i++;
+<<<<<<< HEAD
 		printf("\nfreeing");
 		print_chararr(arr_for_exec);
 		printf("\nsizeof arr_for_exec: %lu", sizeof(arr_for_exec));
 		free(arr_for_exec);
 		printf("\nsuccessfully freed");
+=======
+		printf("freeing\n");
+		print_chararr(arr_for_exec);
+		printf("sizeof arr_for_exec: %lu\n", sizeof(arr_for_exec));
+		free(arr_for_exec);
+		printf("successfully freed\n");
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 		
 	}
 	//This will go carry out the commands
@@ -323,17 +362,28 @@ void handle_commands(char** arr, struct node * head) {
 	}
 	else { //if running parallel
 		run_command_p(arr, head);
+<<<<<<< HEAD
 		//printf("\nWe stop runing run_command_p");
+=======
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	if(mode == 'p') {
 		
 		parallel = 1; //global variable indicates operating in parallel
+<<<<<<< HEAD
 		printf("\narrived in p mode, mode set to %d\n", parallel);
+=======
+		printf("arrived in p mode, mode set to %d\n", parallel);
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	else if(mode == 's') {
 		
 		parallel = 0; //global variable indicates operating sequentially
+<<<<<<< HEAD
 		printf("\narrived in s mode, mode set to %d\n", parallel);
+=======
+		printf("arrived in s mode, mode set to %d\n", parallel);
+>>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	else if(mode== 'd') {
 		printf("\narrived in display, mode set to %d\n", parallel);

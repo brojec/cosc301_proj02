@@ -373,6 +373,8 @@ with a null-terminator, efectively chopping off the '#'
 and everything after it.  
 */
 void nullcomment(char* str) {
+	if(str==NULL || strlen(str)==0)
+		return;
 	int i = 0;
 	for(;str[i]!='\0';i++) {
 		if(str[i]=='#') {
