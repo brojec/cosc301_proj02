@@ -28,6 +28,12 @@ NB:
 int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
+	         
+struct node{
+	char* path;
+	char** args;
+	struct node* next;
+};
 
 //Brett
 int is_space_or_semi(char target){
@@ -71,6 +77,16 @@ Takes a char* token from tokenify() and cleans it up so that it can be easily us
 */
 char** parse_tokens(char* token){
 	remove_whitespace(token);
+	int i=0;
+	char c = token[i];
+	int argc = 0;
+	while(c!='\0'){
+		if(isspace(i)){
+			argc++;
+		}
+		i++;
+		c = token[i];
+	}
 	
 
 }
@@ -161,37 +177,43 @@ char** tokenify(char* str){
 	int charCount;
 	int cmdCount = 0;
 	for(; word != NULL; word = strtok_r(NULL,sep,&tmp)){
+		/*
 		charCount = 0;
 		int i;		
 		for(i = 0; i < strlen(word); i++){ 
 			charCount++;
 		}
+		*/
+		charCount = strlen(str);
 		char* command = (char*)malloc(charCount*sizeof(char));
+		int i;
 		for(i = 0; i < strlen(word); i++){ 
 			command[i] = word[i];
 		}
-		command[strlen(word)] = '\n';
+		//B: ^^can we strdup() this?
+		command[strlen(word)] = '\n';//B: Do we want this to be '\0' instead?
 		cmds[cmdCount] = command;
 		cmdCount++;
 
 	}
 	free(s);
 	cmds[cmdCount] = NULL;
+	int i = 0;
+	while(cmds[i]!=NULL){
+		printf("%s",cmds[i]);
+		i++;
+	}
+	printf("%s\n",cmds[i]);
 	return cmds;
 
 }
 
 //Brett
 int main(int argc, char **argv) {
-	printf("argc: %d\n", argc);
-	int i=0;
-	for(;i<argc;i++){
-		printf("argument %d: %s\n",i,argv[i]);
-	}
 	char* input = (char*) malloc(sizeof(char)*255);
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
-		handle_commands(tokenify(input));
+		tokenify(input);
 		printf(">>>");
 	}
 	printf("\n");
