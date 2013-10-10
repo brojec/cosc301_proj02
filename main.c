@@ -40,13 +40,13 @@ int is_space_or_semi(char target){
 }
 
 //Carrie
-/*
-struct node() { //will create a linked list of processes
+
+struct node { //will create a linked list of processes
 	char ** arr_for_exec;
 	pid_t child_pid;
 	int * child_status;
-	struct node next = NULL;
-}
+	struct node* next;
+};
 
 //Carrie
 void check_process_p(struct node * head) {
@@ -56,12 +56,11 @@ if it's zero, it's done.  Print out that it's done.
 Delete child from linked list
 */
 	struct node * temp;
-	struct node * curr;
+	struct node * curr = head;
 	if(head==NULL) {
 		printf("There are no processes currently running.\n");
 	}
-	int check;
-	int check = waitpid(curr->child_pid, &(curr->child_status), WNOHANG); //check first node
+	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
 	if(check == -1) {
 		printf("Error with %s\n", (curr->arr_for_exec)[0]);
 	}
@@ -72,7 +71,7 @@ Delete child from linked list
 		free(temp);
 	}
 	while(curr->next != NULL) {
-		int check = waitpid(curr->next->child_pid, &(curr->next->child_status), WNOHANG);
+		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
 		if(curr->next->next != NULL) { //if in middle
 			if(check == -1) { //if error
 				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
@@ -203,7 +202,7 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 
 	int ret = 0;
 	int i =0;
-	struct node newnode;	
+	struct node* newnode = (struct node*)malloc(sizeof(struct node));	
 	while(arr[i]!=NULL) {
 		char ** arr_for_exec = tokenify(arr[i],whitespace); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
@@ -219,7 +218,7 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 					printf("Error: Invalid Command\n");
 					exit(0);
 				}
-			newnode->arr_for_exec;
+			newnode->arr_for_exec = arr_for_exec;
 			newnode->child_pid = child_pid;
 			newnode->child_status = &child_status;
 			if(head == NULL) {
@@ -236,15 +235,9 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 		free(arr_for_exec); //*** should I be doing this here?
 		i++;
 	}
-	check process_p(head);
-	int count = 0;
-	while(checkarr[count] != NULL) {
-		pid_t tpid = wait(checkarr[count]); //this SHOULD check that they are all done
-		if(tpid == -1) { //if there was an error
-			printf("Error occured. \n");
-		}
-		count++;			
-	}
+	check_process_p(head);
+	
+	
 }
 
 
@@ -410,12 +403,12 @@ char** tokenify(char* str, const char* delim){
 //Brett
 int main(int argc, char **argv) {
 	char* input = (char*) malloc(sizeof(char)*255);
-	struct node * head;
+	struct node * head = (struct node*)malloc(sizeof(struct node));
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input,whitespace);
 		tokenify(cmds[0],whitespace);
-		handle_commands(cmds);
+		handle_commands(cmds,head);
 		printf(">>>");
 	}
 	printf("\n");
