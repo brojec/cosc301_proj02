@@ -205,7 +205,7 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 	int i =0;
 	struct node newnode;	
 	while(arr[i]!=NULL) {
-		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		char ** arr_for_exec = tokenify(arr[i],whitespace); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 		//first entry should be path name.  Following entries will be options.	
 		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
