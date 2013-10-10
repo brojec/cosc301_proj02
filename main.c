@@ -28,6 +28,7 @@ NB:
 int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
+	         
 
 //Brett
 int is_space_or_semi(char target){
@@ -66,133 +67,229 @@ void remove_whitespace(char* str){
 }
 
 //Brett
+void print_chararr(char** arg){
+	printf("printing array of char*s:\n");
+	if(arg==NULL){
+		printf("Null array");
+		return;
+	}
+	int i = 0;
+	while(arg[i]!=NULL){
+		printf("%s\n", arg[i]);
+		i++;
+	}
+	
+	printf("%s\n",arg[i]);
+}
+
+//Brett
 /*
 Takes a char* token from tokenify() and cleans it up so that it can be easily used by execv() and handle_commands().  Returns an array of chars containing the program path & all options.  
 */
 char** parse_tokens(char* token){
 	remove_whitespace(token);
-	
+	if(strlen(token)==0){
+		return NULL;
+	}
+	int i=0;
+	char c = token[i];
+	int counting_space=0;
+	int argc = 1;
+	while(c!='\0'){
+		if(isspace(i) && !counting_space){
+			counting_space=1;
+		}else if(!isspace(i) && counting_space){
+			argc++;
+			counting_space = 0;	
+		}
+		i++;
+		c = token[i];
+	}
+	char* delim = " \t\n\f\v\r"; //the chars checked by isspace()
+	char** argv = (char**)malloc((argc+1)*sizeof(char*));
+	char* str = strtok(token, delim);
+	i=0;
+	while(str!=NULL){
+		argv[i] = str;
+		i++;
+		str = strtok(NULL, delim);
+	}
+	argv[i] = NULL;
+	return argv;	
 
 }
 
+<<<<<<< HEAD
 /*
+=======
+
+>>>>>>> c13c63c6c9510f1e879dfeb8da28c770dcb940f6
 //Carrie: haven't tested yet
-void run_command_s(char ** arr_for exec) { //sequential:
-	//this will have been malloced in parse_tokens
-	//first entry should be path name.  Following entries will be options.
-	pid_t child_pid;
-	int child_status;
-	child_pid = fork();
-	if(child_pid == 0) { //if child:
-		execv(arr_for_exec[0], arr_for_exec);
-		//if execv returns, that means there was an error
-		printf("Error: Invalid Command\n");
-		exit(0);
-	}
-	else {
-		pid_t tpid = waitpid(&child_status); //wait until child is done
-		if(tpid !=child_pid) { //if not same, soemthing went wrong
-			printf("Error with \s\n", arr_for_exec[0]);
-		}
-	}
-}
-
-//Carrie: haven't tested yet
-
-//Question: I want to access the address of child_Status.  Should I pass back the int, or a pointer?
-
-int child_status run_command_p(char ** arr_for_exec) { //parallel:
-	//this will have been malloced in parse_tokens
-	//first entry should be path name.  Following entries will be options.
-	pid_t child_pid;
-	int child_status;
-	child_pid = fork();
-	if(child_pid == 0) {
-		execv(arr_for_Exec[0], arr_for_exec);
-		//if execv returns, that means there was an error
-		printf("Error: Invalid Command\n");
-		exit(0);
-	}
-	else {
-		pid_t tpid = waitpid(&child_status, WNOHANG); //returns immediately
-		if(tpid == -1) {
-			printf("Error with \s\n", arr_for_exec[0]);
-		}
-	}
-}
-*/
-
-//Brett and Mac and Carrie
-void handle_commands(char** arr) {
-		//if 'mode' or 'exit', call own code (although they don't take priority
-		//over code that was before it on same line)
-		//make sure to check character after 'mode' to see if either a 's', 'p'
-		//or says 'parallel' or 'sequential'
-	//for rest, check if command/process, or if an option (ex -c)
-	//use execv (?) to make process work*/
-	int exit = 0;
-	char mode = '\0';
+void run_command_s(char ** arr) { //sequential:
 	int i = 0;
-	int tofree = 0;
-	if(parallel !=0) { //if running in parallel: doing in if statement so don't needlessly
-	//malloc any space.  Variable tofree is freed at bottom if we enter this if statement
-		int j = 0;
-		while(arr[j] != NULL) { //C: I just need a count of how many commands there are
-			j++;
+	int ret = 0;
+	while(arr[i] != NULL) {
+		printf("parsing command %s\n", arr[i]);
+		char ** arr_for_exec = parse_tokens(arr[i]); //malloced in function
+		//first entry should be path name.  Following entries will be options.
+		printf("in sequential, in loop\n");
+		
+		/*if(strcasecmp(arr_for_exec[0],"exit") == 0){ //want to pass over exit commands here
+			printf("got an exit\n");
+			continue;
 		}
-		(int *) checkarr = (int *) malloc(sizeof(int)*j); /*this will be used to keep
- 						track of which processes are done for parallel */
- 		int tofree = 1;
- 		int k = 0;
- 	}	
-	while(arr[i] != NULL){
-		remove_whitespace(arr[i]);
-		if(strcmp(arr[i],"exit") == 0){
-			exit = 1;
-		}
-		else if(strncasecmp(arr[i],"mode",4) == 0){
-			//B: Changed this block so that default is displaying mode, 
-			//   to fit w/ project description 
-			if(strcasecmp(arr[i][5], "p") ==0) {
-				mode = 'p';
+		else if(strcasecmp(arr_for_exec[0],"mode") == 0) {
+			continue;
+		}*/
+		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
+		//else {
+			pid_t child_pid;
+			int child_status;
+			child_pid = fork();
+			if(child_pid == 0) { //if child:
+				ret = execv(arr_for_exec[0], arr_for_exec);
+				//if execv returns, that means there was an error
 				
+				//****is it okay to set a NULL return?
+				if(ret== -1) {
+					printf("Error: Invalid Command\n");
+					exit(0);
+				}
 			}
-			else if(strcasecmp(arr[i][5], "s") == 0) {
-				mode = 's'; 
-			}
-			else{
-				mode = 'd';
+			else {
+				pid_t tpid = waitpid(child_pid, &child_status, 0); /*wait until child is done */
+				if(tpid !=child_pid) { //if not same, soemthing went wrong
+					printf("Error with %s\n", arr_for_exec[0]);
+				}
 			}
 		}
-		else{
-			char** arr_for_exec = parse_tokens(arr[i]);
-			if(parallel == 0) { //if running sequentially
-				run_command_s(arr_for_exec);
-			}
-			else { //if running parallel
-				//created an array of ints as long as num of entries
-				//have waitpid for each entry.  Once all of them are 0, can continue
-				child_status = run_command_p(arr_for_exec);
-				checkarr[i] = child_status; //this fills checkarr with child_statuses
-			}
-			free(arr_for_exec);
-		}	
+		free(arr_for_exec);
+		i++;
 	}
+}
+
+//Carrie: haven't tested yet
+
+
+void run_command_p(char ** arr) { //parallel:
+	int j = 0;
+	int ret = 0;
+	printf("In a parallel universe...\n");
+	while(arr[j] != NULL) { //C: I just need a count of how many commands there are
+		j++;
+
+	}
+	int ** checkarr = (int **) malloc(sizeof(int *)*j); /*this will be used to keep
+	track of the statuses of the child processes as they run in parallel */	
+	int i =0;	
+	while(arr[i]!=NULL) {
+		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		in the function and includes a remove_whitespace */
+		//first entry should be path name.  Following entries will be options.	
+		
+		/*if(strcmp(arr_for_exec[0],"exit") == 0){ //want to pass over exit commands here
+			continue;
+		}
+		else if(strncasecmp(arr_for_exec[0],"mode",4) == 0) {
+			continue;
+		}*/
+		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
+			pid_t child_pid;
+			int child_status;
+			child_pid = fork();
+			if(child_pid == 0) { //child
+				ret = execv(arr_for_exec[0], arr_for_exec);
+				//if execv returns, that means there was an error
+				if(ret == -1) {
+					printf("Error: Invalid Command\n");
+					exit(0);
+				}
+			}
+			else { //parent
+				pid_t tpid = waitpid(child_pid, &child_status, WNOHANG); //returns 	immediately
+				if(tpid == -1) { //if it returns -1, there was an error
+					printf("Error with %s\n", arr_for_exec[0]);
+				}
+				checkarr[i] = &child_status; //this fills checkarr with 	child_statuses
+				//not sure if this part will work properly
+			}
+		}
+		free(arr_for_exec); //*** should I be doing this here?
+		i++;
+	}	
 	int count = 0;
 	while(checkarr[count] != NULL) {
-		pid_t tpid = wait(&checkarr[count]); //this SHOULD check that they are all done
+		pid_t tpid = wait(checkarr[count]); //this SHOULD check that they are all done
 		if(tpid == -1) { //if there was an error
 			printf("Error occured. \n");
 		}
 		count++;			
 	}
+}
+//*/
+
+//Brett and Mac and Carrie
+void handle_commands(char** arr) {
+//	printf("Entered handle_commands\n");
+	int exitvar = 0;
+	char mode = '\0';
+	int i = 0;	
+	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
+	modes when finished with command line.  That way, don't have to pass anything back
+	and forth for parallel or sequential code */
+		printf("passing %s into parse_tokens\n", arr[i]);
+		printf("parsing command: %s\n", arr[i]);
+		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		in the function and includes a remove_whitespace */
+	//	printf("Arrived at location A\n");
+		printf("For first arg from parse tokens, got %s\n", arr_for_exec[0]);
+		printf("For second arg from parse tokens, got %s\n", arr_for_exec[1]);
+		if(strcasecmp(arr_for_exec[0],"exit") == 0){
+			exitvar = 1;
+		//	printf("Exitvar was set to 1\n");
+		}
+
+		else if(strcasecmp(arr_for_exec[0],"mode") == 0){
+			//B: Changed this block so that default is displaying mode, 
+			//   to fit w/ project description 
+	//		printf("Entered mode else if statement.\n");
+			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
+			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
+			if(arr_for_exec[1] != NULL) {
+				if(strcasecmp(arr_for_exec[1], "p") ==0) {
+					mode = 'p';	
+				}
+				else if(strcasecmp(arr_for_exec[1], "s") == 0) {
+					mode = 's'; 
+				}else{
+					mode = 'd';
+				}
+
+			}
+			else {
+				mode = 'd';
+			}
+		}
+		i++;
+		free(arr_for_exec);
+	}
+	//This will go carry out the commands
+	if(parallel == 0) { //if running sequentially
+		run_command_s(arr);
+	}
+	else { //if running parallel
+		run_command_p(arr);
+	}
 	if(mode == 'p') {
+		printf("arrived in p mode, mode set to %d\n", parallel);
 		parallel = 1; //global variable indicates operating in parallel
 	}
 	else if(mode == 's') {
+		printf("arrived in s mode, mode set to %d\n", parallel);
 		parallel = 0; //global variable indicates operating sequentially
 	}
 	else if(mode== 'd') {
+		printf("arrived in display, mode set to %d\n", parallel);
 		if(parallel == 0) {
 			printf("The mode is currently sequential.\n");
 		}
@@ -200,8 +297,8 @@ void handle_commands(char** arr) {
 			printf("The mode is currently parallel.\n");
 		}
 	}
-	if(tofree == 1) {
-		free(checkarr);	
+	if(exitvar == 1) {
+		exit(0);
 	}	
 }
 
@@ -238,7 +335,8 @@ void nullcomment(char* str) {
 	}
 }
 
-char** tokenify(char* str){
+//Mac
+char** tokenify(char* str){ //takes line of input from command line, breaking up by semicolons
 	nullcomment(str);
 	remove_whitespace(str);
 
@@ -246,7 +344,7 @@ char** tokenify(char* str){
 	char** cmds = (char**)malloc(sizeof(char*)*(tokCount+1));
 
 	
-	printf("number of tokens in %s: %d\n", str, tokCount);
+	printf("number of tokens in '%s': %d\n", str, tokCount);
 	
 	
 	
@@ -257,16 +355,21 @@ char** tokenify(char* str){
 	int charCount;
 	int cmdCount = 0;
 	for(; word != NULL; word = strtok_r(NULL,sep,&tmp)){
+		/*
 		charCount = 0;
 		int i;		
 		for(i = 0; i < strlen(word); i++){ 
 			charCount++;
 		}
+		*/
+		charCount = strlen(str);
 		char* command = (char*)malloc(charCount*sizeof(char));
+		int i;
 		for(i = 0; i < strlen(word); i++){ 
 			command[i] = word[i];
 		}
-		command[strlen(word)] = '\n';
+		//B: ^^can we strdup() this?
+		command[strlen(word)] = '\n';//B: Do we want this to be '\0' instead?
 		cmds[cmdCount] = command;
 		cmdCount++;
 
@@ -279,15 +382,12 @@ char** tokenify(char* str){
 
 //Brett
 int main(int argc, char **argv) {
-	printf("argc: %d\n", argc);
-	int i=0;
-	for(;i<argc;i++){
-		printf("argument %d: %s\n",i,argv[i]);
-	}
 	char* input = (char*) malloc(sizeof(char)*255);
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
-		handle_commands(tokenify(input));
+		char ** cmds = tokenify(input);
+		parse_tokens(cmds[0]);
+		handle_commands(cmds);
 		printf(">>>");
 	}
 	printf("\n");
