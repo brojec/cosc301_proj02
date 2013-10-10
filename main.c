@@ -71,26 +71,59 @@ void remove_whitespace(char* str){
 	str[z] = '\0';
 }
 
+void print_chararr(char** arg){
+	printf("printing array of char*s:\n");
+	if(arg==NULL){
+		printf("Null array");
+		return;
+	}
+	int i = 0;
+	while(arg[i]!=NULL){
+		printf("%s\n", arg[i]);
+		i++;
+	}
+	
+	printf("%s\n",arg[i]);
+}
+
 //Brett
 /*
 Takes a char* token from tokenify() and cleans it up so that it can be easily used by execv() and handle_commands().  Returns an array of chars containing the program path & all options.  
 */
 char** parse_tokens(char* token){
 	remove_whitespace(token);
+	if(strlen(token)==0){
+		return NULL;
+	}
 	int i=0;
 	char c = token[i];
-	int argc = 0;
+	int counting_space=0;
+	int argc = 1;
 	while(c!='\0'){
-		if(isspace(i)){
+		if(isspace(i) && !counting_space){
+			counting_space=1;
+		}else if(!isspace(i) && counting_space){
 			argc++;
+			counting_space = 0;	
 		}
 		i++;
 		c = token[i];
 	}
-	
+	char* delim = " \t\n\f\v\r"; //the chars checked by isspace()
+	char** argv = (char**)malloc((argc+1)*sizeof(char*));
+	char* str = strtok(token, delim);
+	i=0;
+	while(str!=NULL){
+		argv[i] = str;
+		i++;
+		str = strtok(NULL, delim);
+	}
+	argv[i] = NULL;
+	print_chararr(argv);
+	return argv;	
 
 }
-
+#if 0
 //Carrie: haven't tested yet
 void run_command_s(char ** arr) { //sequential:
 	int i = 0;
@@ -230,7 +263,7 @@ void handle_commands(char** arr) {
 		exit();
 	}	
 }
-
+#endif
 
 //Brett & Carrie
 int num_toks(char* str){
@@ -306,10 +339,9 @@ char** tokenify(char* str){
 	cmds[cmdCount] = NULL;
 	int i = 0;
 	while(cmds[i]!=NULL){
-		printf("%s",cmds[i]);
+		parse_tokens(cmds[i]);
 		i++;
 	}
-	printf("%s\n",cmds[i]);
 	return cmds;
 
 }
