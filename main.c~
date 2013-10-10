@@ -119,8 +119,11 @@ char** parse_tokens(char* token){
 
 }
 
+<<<<<<< HEAD
+/*
+=======
 
-
+>>>>>>> c13c63c6c9510f1e879dfeb8da28c770dcb940f6
 //Carrie: haven't tested yet
 void run_command_s(char ** arr) { //sequential:
 	int i = 0;
@@ -167,14 +170,28 @@ void run_command_s(char ** arr) { //sequential:
 
 //Carrie: haven't tested yet
 
+<<<<<<< HEAD
+//Question: I want to access the address of child_Status.  Should I pass back the int, or a pointer?
 
+int child_status run_command_p(char ** arr_for_exec) { //parallel:
+	//this will have been malloced in parse_tokens
+	//first entry should be path name.  Following entries will be options.
+	pid_t child_pid;
+	int child_status;
+	child_pid = fork();
+	if(child_pid == 0) {
+		execv(arr_for_Exec[0], arr_for_exec);
+		//if execv returns, that means there was an error
+		printf("Error: Invalid Command\n");
+		exit(0);
+=======
 void run_command_p(char ** arr) { //parallel:
 	int j = 0;
 	int ret = 0;
 	printf("In a parallel universe...\n");
 	while(arr[j] != NULL) { //C: I just need a count of how many commands there are
 		j++;
-
+>>>>>>> c13c63c6c9510f1e879dfeb8da28c770dcb940f6
 	}
 	int ** checkarr = (int **) malloc(sizeof(int *)*j); /*this will be used to keep
 	track of the statuses of the child processes as they run in parallel */	
@@ -203,12 +220,11 @@ void run_command_p(char ** arr) { //parallel:
 				}
 			}
 			else { //parent
-				pid_t tpid = waitpid(child_pid, &child_status, WNOHANG); 
-				//returns immediately
+				pid_t tpid = waitpid(child_pid, &child_status, WNOHANG); //returns 	immediately
 				if(tpid == -1) { //if it returns -1, there was an error
 					printf("Error with %s\n", arr_for_exec[0]);
 				}
-				checkarr[i] = &child_status; //this fills checkarr with child_statuses
+				checkarr[i] = &child_status; //this fills checkarr with 	child_statuses
 				//not sure if this part will work properly
 			}
 		}
@@ -224,7 +240,7 @@ void run_command_p(char ** arr) { //parallel:
 		count++;			
 	}
 }
-//*/
+*/
 
 //Brett and Mac and Carrie
 void handle_commands(char** arr) {
@@ -246,7 +262,27 @@ void handle_commands(char** arr) {
 			exitvar = 1;
 		//	printf("Exitvar was set to 1\n");
 		}
-
+<<<<<<< HEAD
+		(int *) checkarr = (int *) malloc(sizeof(int)*j); /*this will be used to keep
+ 						track of which processes are done for parallel */
+ 		int tofree = 1;
+ 		int k = 0;
+ 	}	
+	while(arr[i] != NULL){
+		remove_whitespace(arr[i]);
+		if(strcmp(arr[i],"exit") == 0){
+			exit = 1;
+		}
+		else if(strncasecmp(arr[i],"mode",4) == 0){
+			//B: Changed this block so that default is displaying mode, 
+			//   to fit w/ project description 
+			if(strcasecmp(arr[i][5], "p") ==0) {
+				mode = 'p';
+				
+			}
+			else if(strcasecmp(arr[i][5], "s") == 0) {
+				mode = 's'; 
+=======
 		else if(strcasecmp(arr_for_exec[0],"mode") == 0){
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
@@ -262,7 +298,7 @@ void handle_commands(char** arr) {
 				}else{
 					mode = 'd';
 				}
-
+>>>>>>> c13c63c6c9510f1e879dfeb8da28c770dcb940f6
 			}
 			else {
 				mode = 'd';
