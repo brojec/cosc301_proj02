@@ -28,6 +28,8 @@ NB:
 int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
+
+char* whitespace = " \n\v\t\r\f"	         
 	         
 
 //Brett
@@ -37,7 +39,7 @@ int is_space_or_semi(char target){
 
 
 //Brett & Carrie
-void remove_whitespace(char* str){
+void remove_whitespace(char* str, char* delim){
 	//removes leading & trailing whitespaces and ';'s in str in-place. 
 	int first_char = 0; //index of first non semicolon or whitespace character
 	int last_char = 0; //index of the last non semicolon or whitespace character
@@ -80,43 +82,6 @@ void print_chararr(char** arg){
 	}
 	
 	printf("%s\n",arg[i]);
-}
-
-//Brett
-/*
-Takes a char* token from tokenify() and cleans it up so that it can be easily used by execv() and handle_commands().  Returns an array of chars containing the program path & all options.  
-*/
-char** parse_tokens(char* token){
-	remove_whitespace(token);
-	if(strlen(token)==0){
-		return NULL;
-	}
-	int i=0;
-	char c = token[i];
-	int counting_space=0;
-	int argc = 1;
-	while(c!='\0'){
-		if(isspace(i) && !counting_space){
-			counting_space=1;
-		}else if(!isspace(i) && counting_space){
-			argc++;
-			counting_space = 0;	
-		}
-		i++;
-		c = token[i];
-	}
-	char* delim = " \t\n\f\v\r"; //the chars checked by isspace()
-	char** argv = (char**)malloc((argc+1)*sizeof(char*));
-	char* str = strtok(token, delim);
-	i=0;
-	while(str!=NULL){
-		argv[i] = str;
-		i++;
-		str = strtok(NULL, delim);
-	}
-	argv[i] = NULL;
-	return argv;	
-
 }
 
 
@@ -171,7 +136,7 @@ void run_command_s(char ** arr) { //sequential:
 void run_command_p(char ** arr) { //parallel:
 	int j = 0;
 	int ret = 0;
-	printf("In a parallel universe...\n");
+//	printf("In a parallel universe...\n");
 	while(arr[j] != NULL) { //C: I just need a count of how many commands there are
 		j++;
 
@@ -198,7 +163,7 @@ void run_command_p(char ** arr) { //parallel:
 				ret = execv(arr_for_exec[0], arr_for_exec);
 				//if execv returns, that means there was an error
 				if(ret == -1) {
-					printf("Error: Invalid Command\n");
+					printf("Problem parsing command %s\n", arr_for_exec[0]);
 					exit(0);
 				}
 			}
@@ -232,6 +197,12 @@ void handle_commands(char** arr) {
 	int exitvar = 0;
 	char mode = '\0';
 	int i = 0;	
+
+	while(arr[i] != NULL){
+		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		in the function and includes a remove_whitespace */
+
+
 	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
 	modes when finished with command line.  That way, don't have to pass anything back
 	and forth for parallel or sequential code */
@@ -242,17 +213,20 @@ void handle_commands(char** arr) {
 	//	printf("Arrived at location A\n");
 		printf("For first arg from parse tokens, got %s\n", arr_for_exec[0]);
 		printf("For second arg from parse tokens, got %s\n", arr_for_exec[1]);
+
 		if(strcasecmp(arr_for_exec[0],"exit") == 0){
 			exitvar = 1;
 		//	printf("Exitvar was set to 1\n");
 		}
 
 		else if(strcasecmp(arr_for_exec[0],"mode") == 0){
+
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
 	//		printf("Entered mode else if statement.\n");
 			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
 			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
+
 			if(arr_for_exec[1] != NULL) {
 				if(strcasecmp(arr_for_exec[1], "p") ==0) {
 					mode = 'p';	
@@ -269,7 +243,12 @@ void handle_commands(char** arr) {
 			}
 		}
 		i++;
+		printf("freeing\n");
+		print_chararr(arr_for_exec);
+		printf("sizeof arr_for_exec: %d\n", sizeof(arr_for_exec));
 		free(arr_for_exec);
+		printf("successfully freed\n");
+		
 	}
 	//This will go carry out the commands
 	if(parallel == 0) { //if running sequentially
@@ -302,18 +281,17 @@ void handle_commands(char** arr) {
 
 
 //Brett & Carrie
-int num_toks(char* str){
+//Brett & Carrie
+int num_toks(char* str,const char* delim){
 	if(str==NULL || strlen(str)==0)
 		return 0;
-	int toks = 1;
-	char c;
-	int i = 0;
-	for(c=str[i];c!='\0';c=str[++i]){
-		if(c==';'){
-			if(str[i+1]!='\0' && str[i+1]!=';')
-				toks++;
-		}
-	}
+	
+	int toks = 0;
+	char* copy = strdup(str);
+	char* s = strtok(copy, delim);
+	for(;s!=NULL;s = strtok(NULL, delim))
+		toks++;
+	free(copy);
 	return toks;
 }
 
@@ -333,18 +311,14 @@ void nullcomment(char* str) {
 	}
 }
 
-//Mac
-char** tokenify(char* str){ //takes line of input from command line, breaking up by semicolons
+//Mac & Brett
+char** tokenify(char* str, char* delim){ //takes line of input from command line, breaking up by semicolons
 	nullcomment(str);
 	remove_whitespace(str);
 
 	int tokCount = num_toks(str);
 	char** cmds = (char**)malloc(sizeof(char*)*(tokCount+1));
 
-	
-	printf("number of tokens in '%s': %d\n", str, tokCount);
-	
-	
 	
 	const char* sep = ";\n";
 	char* tmp;
