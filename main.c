@@ -3,7 +3,7 @@
 	October, 2013
 	Contributers:
 		Carrie Burgess
-		Zombie bastard (Mac Lanphier)
+		Zombie Bastard (Mac Lanphier)
 		Brett Rojec
 		
 NB:
@@ -62,8 +62,11 @@ Delete child from linked list
 		printf("There are no processes currently running.\n");
 	}
 	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
+	printf("\nCheck is %d",check);
+	printf("\n");
 	if(check == -1) {
-		printf("Error with child");
+		printf("\nError with child");
+		free(curr);
 	}
 	else if(check != 0) {
 		temp = head;
@@ -72,7 +75,9 @@ Delete child from linked list
 		free(temp);
 	}
 	while(curr->next != NULL) {
+		//printf("\nWaiting for SOMETHING");
 		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
+		printf("\nCheck is %d",check);  //This apparently doesnt happen?
 		if(curr->next->next != NULL) { //if in middle
 			if(check == -1) { //if error
 				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
@@ -174,6 +179,7 @@ void run_command_s(char ** arr) { //sequential:
 			int child_status;
 			child_pid = fork();
 			if(child_pid == 0) { //if child:
+				//printf("\nIm a child!");
 				ret = execv(arr_for_exec[0], arr_for_exec);
 				//if execv returns, that means there was an error
 				
@@ -213,30 +219,43 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 			pid_t child_pid;
 			int child_status;
 			child_pid = fork();
+			printf("\nPID = %d",child_pid);
 			if(child_pid == 0) { //child
+				printf("\nCHILD SHOULD DIE");
+				printf("\n");
 				ret = execv(arr_for_exec[0], arr_for_exec);
 				//if execv returns, that means there was an error
+				int status;
+				pid_t result = waitpid(child_pid, &status, WNOHANG);
+				if (result == 0) {
+  					printf("\nChild still alive");
+				} else if (result == -1) {
+ 					 printf("\nError"); 
+				} else {
+					 printf("\nChild exited");
+				}
 				if(ret == -1) {
 					printf("Error: Invalid Command\n");
 					exit(0);
 				}
-			newnode->arr_for_exec = arr_for_exec;
-			newnode->child_pid = child_pid;
-			newnode->child_status = &child_status;
-			if(head == NULL) {
-				head = newnode;
-				head -> next = NULL;
-			}
-			else{
-				newnode -> next = head;
-				head = newnode;
-			}
+				newnode->arr_for_exec = arr_for_exec;
+				newnode->child_pid = child_pid;
+				newnode->child_status = &child_status;
+				if(head == NULL) {
+					head = newnode;
+					head -> next = NULL;
+				}
+				else{
+					newnode -> next = head;
+					head = newnode;
+				}
 			//need to add node to an existing linked list....
 			}
 		}
 		free(arr_for_exec); //*** should I be doing this here?
 		i++;
 	}
+	//printf("\nGoing to check_process_p with PID of %d",child_pid);
 	check_process_p(head);
 	
 	
@@ -273,8 +292,8 @@ void handle_commands(char** arr, struct node * head) {
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
 		//	printf("Entered mode else if statement.\n");
-			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
-			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
+			printf("\narr_for_exec[0] is %s", arr_for_exec[0]);
+			printf("\narr_for_exec[1] is %s", arr_for_exec[1]);
 
 			if(arr_for_exec[1] != NULL) {
 				if(strcasecmp(arr_for_exec[1], "p") ==0 || strcasecmp(arr_for_exec[1], "parallel") ==0) {
@@ -292,11 +311,11 @@ void handle_commands(char** arr, struct node * head) {
 			}
 		}
 		i++;
-		printf("freeing\n");
+		printf("\nfreeing");
 		print_chararr(arr_for_exec);
-		printf("sizeof arr_for_exec: %lu\n", sizeof(arr_for_exec));
+		printf("\nsizeof arr_for_exec: %lu", sizeof(arr_for_exec));
 		free(arr_for_exec);
-		printf("successfully freed\n");
+		printf("\nsuccessfully freed");
 		
 	}
 	//This will go carry out the commands
@@ -305,24 +324,25 @@ void handle_commands(char** arr, struct node * head) {
 	}
 	else { //if running parallel
 		run_command_p(arr, head);
+		//printf("\nWe stop runing run_command_p");
 	}
 	if(mode == 'p') {
 		
 		parallel = 1; //global variable indicates operating in parallel
-		printf("arrived in p mode, mode set to %d\n", parallel);
+		printf("\narrived in p mode, mode set to %d\n", parallel);
 	}
 	else if(mode == 's') {
 		
 		parallel = 0; //global variable indicates operating sequentially
-		printf("arrived in s mode, mode set to %d\n", parallel);
+		printf("\narrived in s mode, mode set to %d\n", parallel);
 	}
 	else if(mode== 'd') {
-		printf("arrived in display, mode set to %d\n", parallel);
+		printf("\narrived in display, mode set to %d\n", parallel);
 		if(parallel == 0) {
-			printf("The mode is currently sequential.\n");
+			printf("\nThe mode is currently sequential.\n");
 		}
 		else {
-			printf("The mode is currently parallel.\n");
+			printf("\nThe mode is currently parallel.\n");
 		}
 	}
 	if(exitvar == 1) {
