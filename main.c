@@ -91,38 +91,144 @@ char** parse_tokens(char* token){
 
 }
 
+//Carrie: haven't tested yet
+void run_command_s(char ** arr) { //sequential:
+	int i = 0;
+	int ret = NULL;
+	while(arr[i] != NULL) {
+		char ** arr_for_exec = parse_tokens(arr[i]); //malloced in function
+		//first entry should be path name.  Following entries will be options.
+		if(strcmp(arr_for_exec[0],"exit") == 0){ //want to pass over exit commands here
+			continue;
+		}
+		else if(strncasecmp(arr_for_exec[0],"mode",4) == 0) {
+			continue;
+		}
+		pid_t child_pid;
+		int child_status;
+		child_pid = fork();
+		if(child_pid == 0) { //if child:
+			ret = execv(arr_for_exec[0], arr_for_exec);
+			//if execv returns, that means there was an error
+			
+			//****is it okay to set a NULL return?
+			if(ret== -1) {
+				printf("Error: Invalid Command\n");
+				exit(0);
+			}
+		}
+		else {
+			pid_t tpid = waitpid(&child_status); //wait until child is done
+			if(tpid !=child_pid) { //if not same, soemthing went wrong
+				printf("Error with \s\n", arr_for_exec[0]);
+			}
+		}
+		free(arr_for_exec);
+	}
+}
+
+//Carrie: haven't tested yet
+
+void run_command_p(char ** arr) { //parallel:
+	int j = 0;
+	int ret = NULL;
+	while(arr[j] != NULL) { //C: I just need a count of how many commands there are
+		j++;
+	}
+	(int *) checkarr = (int *) malloc(sizeof(int)*j); /*this will be used to keep
+	track of the statuses of the child processes as they run in parallel */	
+	int i =0;	
+	while(arr[i]!=NULL) {
+		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		in the function and includes a remove_whitespace */
+		//first entry should be path name.  Following entries will be options.	
+		if(strcmp(arr_for_exec[0],"exit") == 0){ //want to pass over exit commands here
+			continue;
+		}
+		else if(strncasecmp(arr_for_exec[0],"mode",4) == 0) {
+			continue;
+		}
+		pid_t child_pid;
+		int child_status;
+		child_pid = fork();
+		if(child_pid == 0) { //child
+			ret = execv(arr_for_exec[0], arr_for_exec);
+			//if execv returns, that means there was an error
+			if(ret == -1) {
+				printf("Error: Invalid Command\n");
+				exit(0);
+			}
+		}
+		else { //parent
+			pid_t tpid = waitpid(&child_status, WNOHANG); //returns immediately
+			if(tpid == -1) { //if it returns -1, there was an error
+				printf("Error with %s\n", arr_for_exec[0]);
+			}
+			checkarr[i] = child_status; //this fills checkarr with child_statuses
+			//not sure if this part will work properly
+		}
+		free(arr_for_exec); //*** should I be doing this here?
+	}	
+	int count = 0;
+	while(checkarr[count] != NULL) {
+		pid_t tpid = wait(&checkarr[count]); //this SHOULD check that they are all done
+		if(tpid == -1) { //if there was an error
+			printf("Error occured. \n");
+		}
+		count++;			
+	}
+}
+
+//Brett and Mac and Carrie
 void handle_commands(char** arr) {
-		//if 'mode' or 'exit', call own code (although they don't take priority
-		//over code that was before it on same line)
-		//make sure to check character after 'mode' to see if either a 's', 'p'
-		//or says 'parallel' or 'sequential'
-	//for rest, check if command/process, or if an option (ex -c)
-	//use execv (?) to make process work*/
 	int exit = 0;
 	char mode = '\0';
-	int i = 0;
-	while(arr[i] != NULL){
+	int i = 0;	
+	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
+	modes when finished with command line.  That way, don't have to pass anything back
+	and forth for parallel or sequential code */
 		remove_whitespace(arr[i]);
 		if(strcmp(arr[i],"exit") == 0){
 			exit = 1;
 		}
-		else if(strncmp(arr[i],"mode",4) == 0){
+		else if(strncasecmp(arr[i],"mode",4) == 0){
 			//B: Changed this block so that default is displaying mode, 
-			//   to fit w/ project description
-			if(arr[i][5] == 'p'){
-				mode = 'p';
+			//   to fit w/ project description 
+			if(strcasecmp(arr[i][5], "p") ==0) {
+				mode = 'p';	
 			}
-			else if(arr[i][5] == 's'){
-				mode = 's';
+			else if(strcasecmp(arr[i][5], "s") == 0) {
+				mode = 's'; 
 			}
 			else{
 				mode = 'd';
 			}
 		}
-		else{
-			//execv
+	}
+	//This will go carry out the commands
+	if(parallel == 0) { //if running sequentially
+		run_command_s(arr);
+	}
+	else { //if running parallel
+		run_command_p(arr);
+	}
+	if(mode == 'p') {
+		parallel = 1; //global variable indicates operating in parallel
+	}
+	else if(mode == 's') {
+		parallel = 0; //global variable indicates operating sequentially
+	}
+	else if(mode== 'd') {
+		if(parallel == 0) {
+			printf("The mode is currently sequential.\n");
+		}
+		else {
+			printf("The mode is currently parallel.\n");
 		}
 	}
+	if(exit == 1) {
+		exit();
+	}	
 }
 
 
