@@ -25,11 +25,13 @@ NB:
 #include <poll.h>
 #include <signal.h>
 
+char** tokenify(char*, const char*);
+
 int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
 
-char* whitespace = " \n\v\t\r\f"	         
+char* whitespace = " \n\v\t\r\f";	         
 	         
 
 //Brett
@@ -92,7 +94,7 @@ void run_command_s(char ** arr) { //sequential:
 	int ret = 0;
 	while(arr[i] != NULL) {
 		printf("parsing command %s\n", arr[i]);
-		char ** arr_for_exec = parse_tokens(arr[i]); //malloced in function
+		char ** arr_for_exec = tokenify(arr[i],whitespace); //malloced in function
 		//first entry should be path name.  Following entries will be options.
 		printf("in sequential, in loop\n");
 		
@@ -145,7 +147,7 @@ void run_command_p(char ** arr) { //parallel:
 	track of the statuses of the child processes as they run in parallel */	
 	int i =0;	
 	while(arr[i]!=NULL) {
-		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		char ** arr_for_exec = tokenify(arr[i],whitespace); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 		//first entry should be path name.  Following entries will be options.	
 		
@@ -198,17 +200,13 @@ void handle_commands(char** arr) {
 	char mode = '\0';
 	int i = 0;	
 
-	while(arr[i] != NULL){
-		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
-		in the function and includes a remove_whitespace */
-
 
 	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
 	modes when finished with command line.  That way, don't have to pass anything back
 	and forth for parallel or sequential code */
-		printf("passing %s into parse_tokens\n", arr[i]);
+		printf("passing %s into tokenify\n", arr[i]);
 		printf("parsing command: %s\n", arr[i]);
-		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		char ** arr_for_exec = tokenify(arr[i],whitespace); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 	//	printf("Arrived at location A\n");
 		printf("For first arg from parse tokens, got %s\n", arr_for_exec[0]);
@@ -228,10 +226,10 @@ void handle_commands(char** arr) {
 			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
 
 			if(arr_for_exec[1] != NULL) {
-				if(strcasecmp(arr_for_exec[1], "p") ==0) {
+				if(strcasecmp(arr_for_exec[1], "p") ==0 || strcasecmp(arr_for_exec[1], "parallel") ==0) {
 					mode = 'p';	
 				}
-				else if(strcasecmp(arr_for_exec[1], "s") == 0) {
+				else if(strcasecmp(arr_for_exec[1], "s") == 0 || strcasecmp(arr_for_exec[1], "sequential") ==0) {
 					mode = 's'; 
 				}else{
 					mode = 'd';
@@ -245,7 +243,7 @@ void handle_commands(char** arr) {
 		i++;
 		printf("freeing\n");
 		print_chararr(arr_for_exec);
-		printf("sizeof arr_for_exec: %d\n", sizeof(arr_for_exec));
+		printf("sizeof arr_for_exec: %lu\n", sizeof(arr_for_exec));
 		free(arr_for_exec);
 		printf("successfully freed\n");
 		
@@ -282,7 +280,7 @@ void handle_commands(char** arr) {
 
 //Brett & Carrie
 //Brett & Carrie
-int num_toks(char* str,const char* delim){
+int num_toks(char* str,const char* delim){  //remove delimiter tokens from front or end
 	if(str==NULL || strlen(str)==0)
 		return 0;
 	
@@ -312,21 +310,22 @@ void nullcomment(char* str) {
 }
 
 //Mac & Brett
-char** tokenify(char* str, char* delim){ //takes line of input from command line, breaking up by semicolons
+char** tokenify(char* str, const char* delim){ 
+//takes line of input from command line, breaking up by semicolons
 	nullcomment(str);
-	remove_whitespace(str);
+	remove_whitespace(str,whitespace);
 
-	int tokCount = num_toks(str);
+	int tokCount = num_toks(str,delim);
 	char** cmds = (char**)malloc(sizeof(char*)*(tokCount+1));
 
 	
-	const char* sep = ";\n";
+//	const char* sep = ";\n";
 	char* tmp;
 	char* s = strdup(str);
-	char* word= strtok_r(s,sep,&tmp);
+	char* word= strtok_r(s,delim,&tmp);
 	int charCount;
 	int cmdCount = 0;
-	for(; word != NULL; word = strtok_r(NULL,sep,&tmp)){
+	for(; word != NULL; word = strtok_r(NULL,delim,&tmp)){
 		/*
 		charCount = 0;
 		int i;		
@@ -357,8 +356,8 @@ int main(int argc, char **argv) {
 	char* input = (char*) malloc(sizeof(char)*255);
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
-		char ** cmds = tokenify(input);
-		parse_tokens(cmds[0]);
+		char ** cmds = tokenify(input,whitespace);
+		tokenify(cmds[0],whitespace);
 		handle_commands(cmds);
 		printf(">>>");
 	}
