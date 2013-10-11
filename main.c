@@ -382,7 +382,8 @@ int main(int argc, char **argv) {
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input);
-		handle_commands(cmds);
+		parse_tokens(cmds[0]);
+		//handle_commands(cmds);
 		printf(">>>");
 	}
 	printf("\n");
