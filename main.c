@@ -52,11 +52,11 @@ struct node { //will create a linked list of processes
 void check_process_s(struct node *head) { //this will only ever be one node long.  
 //wait for process to finish, then kill node
 	if(head == NULL) {
-		printf("There are no proccesses currently running in sequential mode.\n");
+		printf("There are no proccesses currently running in sequential mode.\n\n");
 	}
 	pid_t tpid = waitpid(head->child_pid, head->child_status, 0);
 	if(tpid != head->child_pid) {
-		printf("Error with %s\n", (head->arr_for_exec)[0]);
+		printf("Error with '%s'\n\n", (head->arr_for_exec)[0]);
 	}
 	free(head->arr_for_exec);
 	free(head);
@@ -65,28 +65,35 @@ void check_process_s(struct node *head) { //this will only ever be one node long
 
 void check_process_p(struct node * head) { //this is purely to cycle through/ see which processes
 //are finished for parallel
-	printf("\nchecking the processes\n");
+//	printf("\nchecking the processes\n");
 	struct node * temp;
 	struct node * curr = head;
 	if(head==NULL) {
-		printf("There are no processes currently running in parallel mode.\n");
+		printf("There are no processes currently running in parallel mode.\n\n");
 	}
-	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
-	if(check == -1) {
-		printf("Error with child");
-	}
-	else if(check != 0) {
-		temp = head;
-		head = head-> next;
-		printf("Proccess call '%s' has finished.\n", (temp->arr_for_exec)[0]);
-		free(temp->arr_for_exec);
-		free(temp);
+	if(curr->next == NULL) {
+		int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); 
+		//check first node
+		if(check == -1) {
+			printf("Error with child\n\n");
+			free(curr->arr_for_exec);
+			free(curr);
+			curr = NULL;
+		}
+		else if(check != 0) {
+			//temp = head;
+			//head = head-> next;
+			printf("Proccess call '%s' has finished.\n\n", (curr->arr_for_exec)[0]);
+			free(curr->arr_for_exec);
+			free(curr);
+			curr = NULL;
+		}
 	}
 	while(curr != NULL && curr->next != NULL) {
 		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
 		if(curr->next->next != NULL) { //if in middle
 			if(check == -1) { //if error
-				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				printf("Error with %s\n\n", (curr->next->arr_for_exec)[0]);
 				temp = curr -> next;
 				curr-> next = curr -> next -> next;
 				free(temp->arr_for_exec);
@@ -95,20 +102,20 @@ void check_process_p(struct node * head) { //this is purely to cycle through/ se
 			else if(check != 0) { //if process is done
 				temp = curr->next;
 				curr->next = curr -> next -> next;
-				printf("Proccess call '%s' has finished.\n",(temp->arr_for_exec)[0]);
+				printf("Proccess call '%s' has finished.\n\n",(temp->arr_for_exec)[0]);
 				free(temp->arr_for_exec);
 				free(temp);
 			}
 		}
 		else { //if curr->next->next == NULL: if at end
 			if(check == -1) {
-				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				printf("Error with %s\n\n", (curr->next->arr_for_exec)[0]);
 				free(curr->next->arr_for_exec);
 				free(curr->next);
 				curr->next = NULL;
 			}
 			else if(check !=0) {
-				printf("Proccess call '%s' has finished.\n",(curr->next->arr_for_exec)[0]);
+				printf("Proccess call '%s' has finished.\n\n",(curr->next->arr_for_exec)[0]);
 				free(curr->next->arr_for_exec);
 				free(curr->next);
 				curr->next = NULL;
@@ -116,9 +123,11 @@ void check_process_p(struct node * head) { //this is purely to cycle through/ se
 		}
 	curr = curr->next;		
 	}
+	printf("Exited loop once\n");
 	if(head != NULL) { //if we have proccesses still running, go through list again
 		check_process_p(head);
-	}	
+	}
+	printf("Done with check_proccess_p\n");	
 }
 
 //Brett & Carrie
@@ -166,97 +175,6 @@ void print_chararr(char** arg){
 	
 	printf("%s\n",arg[i]);
 }
-
-
-
-//Carrie: haven't tested yet
-/*
-void run_command_s(char ** arr) { //sequential:
-	int i = 0;
-	int ret = 0;
-	while(arr[i] != NULL) {
-		printf("parsing command %s\n", arr[i]);
-		char ** arr_for_exec = tokenify(arr[i],whitespace); //malloced in function
-		//first entry should be path name.  Following entries will be options.
-		printf("in sequential, in loop\n");
-		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
-		//else {
-			pid_t child_pid;
-			int child_status;
-			child_pid = fork();
-			if(child_pid == 0) { //if child:
-				ret = execv(arr_for_exec[0], arr_for_exec);
-				//if execv returns, that means there was an error
-				
-
-				if(ret== -1) {
-					printf("Error: Invalid Command\n");
-					exit(0);
-				}
-			}
-			else {
-				pid_t tpid = waitpid(child_pid, &child_status, 0); 
-				//wait until child is done 
-				if(tpid !=child_pid) { //if not same, soemthing went wrong
-					printf("Error with %s\n", arr_for_exec[0]);
-				}
-			}
-		}
-		free(arr_for_exec);
-		i++;
-	}
-}
-*/
-
-//Carrie, with linked list
-/*
-void run_command_p(char ** arr, struct node * head) { //parallel:
-
-
-	//need to have case to initialize linked list, and need to pass in potential head
-	printf("\nRunning commands in parallel");
-	printf("\n");
-	int ret = 0;
-	int i =0;
-	struct node* newnode = (struct node*)malloc(sizeof(struct node));	
-	while(arr[i]!=NULL) {
-		char ** arr_for_exec = tokenify(arr[i],whitespace); // I believe this is malloced
-		//in the function and includes a remove_whitespace 
-		//first entry should be path name.  Following entries will be options.	
-		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
-			pid_t child_pid;
-			int child_status;
-			child_pid = fork();
-			if(child_pid == 0) { //child
-				ret = execv(arr_for_exec[0], arr_for_exec);
-				//if execv returns, that means there was an error
-				if(ret == -1) {
-					printf("Error: Invalid Command\n");
-					exit(0);
-				}
-			newnode->arr_for_exec = arr_for_exec;
-			newnode->child_pid = child_pid;
-			newnode->child_status = &child_status;
-			if(head == NULL) {
-				head = newnode;
-				head -> next = NULL;
-			}
-			else{
-				newnode -> next = head;
-				head = newnode;
-			}
-			//need to add node to an existing linked list....
-			}
-		}
-		free(arr_for_exec); // should I be doing this here?
-		i++;
-	}
-	check_process_p(head);
-	
-	
-}
-*/
-
 
 
 //Brett and Mac and Carrie
