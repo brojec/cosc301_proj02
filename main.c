@@ -227,7 +227,7 @@ void run_command_p(char ** arr) { //parallel:
 
 //Brett and Mac and Carrie
 void handle_commands(char** arr) {
-	printf("Entered handle_commands\n");
+//	printf("Entered handle_commands\n");
 	int exitvar = 0;
 	char mode = '\0';
 	int i = 0;	
@@ -236,30 +236,30 @@ void handle_commands(char** arr) {
 	and forth for parallel or sequential code */
 		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
-		printf("Arrived at location A\n");
+	//	printf("Arrived at location A\n");
 		if(strcasecmp(arr_for_exec[0],"exit") == 0){
 			exitvar = 1;
-			printf("Exitvar was set to 1\n");
+		//	printf("Exitvar was set to 1\n");
 		}
 		else if(strcasecmp(arr_for_exec[0],"mode") == 0){
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
-			printf("Entered mode else if statement.\n");
+	//		printf("Entered mode else if statement.\n");
+	//		printf("exec[0] is %s\n", arr_for_exec[0]);
 			if(arr_for_exec[1] != NULL) {
+				printf("mode: %s\n", arr_for_exec[1]);
 				if(strcasecmp(arr_for_exec[1], "p") ==0) {
 					mode = 'p';	
 				}
 				else if(strcasecmp(arr_for_exec[1], "s") == 0) {
 					mode = 's'; 
-				}
-				else {
+				}else{
 					mode = 'd';
 				}
 			}
-			/*else{
+			else {
 				mode = 'd';
-				printf("going to display\n");
-			}*/
+			}
 		}
 		i++;
 		free(arr_for_exec);
