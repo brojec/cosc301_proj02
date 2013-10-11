@@ -71,6 +71,7 @@ void remove_whitespace(char* str){
 	str[z] = '\0';
 }
 
+//Brett
 void print_chararr(char** arg){
 	printf("printing array of char*s:\n");
 	if(arg==NULL){
@@ -367,11 +368,6 @@ char** tokenify(char* str){ //takes line of input from command line, breaking up
 	}
 	free(s);
 	cmds[cmdCount] = NULL;
-	int i = 0;
-	while(cmds[i]!=NULL){
-		parse_tokens(cmds[i]);
-		i++;
-	}
 	return cmds;
 
 }
@@ -382,7 +378,7 @@ int main(int argc, char **argv) {
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input);
-		handle_commands(cmds);
+		parse_tokens(cmds[0]);
 		printf(">>>");
 	}
 	printf("\n");
