@@ -235,9 +235,12 @@ void handle_commands(char** arr) {
 	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
 	modes when finished with command line.  That way, don't have to pass anything back
 	and forth for parallel or sequential code */
+		printf("passing %s into parse_tokens\n", arr[i]);
 		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 	//	printf("Arrived at location A\n");
+		printf("For first arg from parse tokens, got %s\n", arr_for_exec[0]);
+		printf("For second arg from parse tokens, got %s\n", arr_for_exec[1]);
 		if(strcasecmp(arr_for_exec[0],"exit") == 0){
 			exitvar = 1;
 		//	printf("Exitvar was set to 1\n");
@@ -246,7 +249,8 @@ void handle_commands(char** arr) {
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
 	//		printf("Entered mode else if statement.\n");
-	//		printf("exec[0] is %s\n", arr_for_exec[0]);
+			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
+			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
 			if(arr_for_exec[1] != NULL) {
 				printf("mode: %s\n", arr_for_exec[1]);
 				if(strcasecmp(arr_for_exec[1], "p") ==0) {
@@ -336,7 +340,7 @@ char** tokenify(char* str){ //takes line of input from command line, breaking up
 	char** cmds = (char**)malloc(sizeof(char*)*(tokCount+1));
 
 	
-	printf("number of tokens in %s: %d\n", str, tokCount);
+	printf("number of tokens in '%s': %d\n", str, tokCount);
 	
 	
 	
@@ -379,7 +383,7 @@ int main(int argc, char **argv) {
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input);
 		parse_tokens(cmds[0]);
-		//handle_commands(cmds);
+		handle_commands(cmds);
 		printf(">>>");
 	}
 	printf("\n");
