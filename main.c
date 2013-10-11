@@ -49,7 +49,6 @@ struct node { //will create a linked list of processes
 };
 
 //Carrie
-
 void check_process_s(struct node *head) { //this will only ever be one node long.  
 //wait for process to finish, then kill node
 	if(head == NULL) {
@@ -66,6 +65,7 @@ void check_process_s(struct node *head) { //this will only ever be one node long
 
 void check_process_p(struct node * head) { //this is purely to cycle through/ see which processes
 //are finished for parallel
+	printf("\nchecking the processes\n");
 	struct node * temp;
 	struct node * curr = head;
 	if(head==NULL) {
@@ -73,7 +73,7 @@ void check_process_p(struct node * head) { //this is purely to cycle through/ se
 	}
 	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
 	if(check == -1) {
-		printf("Error with %s\n", (curr->arr_for_exec)[0]);
+		printf("Error with child");
 	}
 	else if(check != 0) {
 		temp = head;
@@ -214,7 +214,8 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 
 
 	//need to have case to initialize linked list, and need to pass in potential head
-
+	printf("\nRunning commands in parallel");
+	printf("\n");
 	int ret = 0;
 	int i =0;
 	struct node* newnode = (struct node*)malloc(sizeof(struct node));	
@@ -287,7 +288,7 @@ void handle_commands(char** arr, struct node * head) {
 
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
-	//		printf("Entered mode else if statement.\n");
+		//	printf("Entered mode else if statement.\n");
 			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
 			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
 
@@ -360,12 +361,14 @@ void handle_commands(char** arr, struct node * head) {
 	}
 	*/
 	if(mode == 'p') {
-		printf("arrived in p mode, mode set to %d\n", parallel);
+		
 		parallel = 1; //global variable indicates operating in parallel
+		printf("arrived in p mode, mode set to %d\n", parallel);
 	}
 	else if(mode == 's') {
-		printf("arrived in s mode, mode set to %d\n", parallel);
+		
 		parallel = 0; //global variable indicates operating sequentially
+		printf("arrived in s mode, mode set to %d\n", parallel);
 	}
 	else if(mode== 'd') {
 		printf("arrived in display, mode set to %d\n", parallel);
@@ -402,6 +405,8 @@ with a null-terminator, efectively chopping off the '#'
 and everything after it.  
 */
 void nullcomment(char* str) {
+	if(str==NULL || strlen(str)==0)
+		return;
 	int i = 0;
 	for(;str[i]!='\0';i++) {
 		if(str[i]=='#') {
@@ -442,7 +447,7 @@ char** tokenify(char* str, const char* delim){
 			command[i] = word[i];
 		}
 		//B: ^^can we strdup() this?
-		command[strlen(word)] = '\n';//B: Do we want this to be '\0' instead?
+		command[strlen(word)] = '\0';//B: Do we want this to be '\0' instead?
 		cmds[cmdCount] = command;
 		cmdCount++;
 
@@ -459,7 +464,7 @@ int main(int argc, char **argv) {
 	struct node * head = (struct node*)malloc(sizeof(struct node));
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
-		char ** cmds = tokenify(input,whitespace);
+		char ** cmds = tokenify(input,";");
 		tokenify(cmds[0],whitespace);
 		handle_commands(cmds,head);
 		printf(">>>");
@@ -478,6 +483,11 @@ Journal entry 1:
 	
 	-Survivors out.
 */
+
+
+
+
+
 
 
 /*
