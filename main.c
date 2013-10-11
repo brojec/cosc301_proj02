@@ -131,6 +131,7 @@ void run_command_s(char ** arr) { //sequential:
 	int i = 0;
 	int ret = 0;
 	while(arr[i] != NULL) {
+		printf("parsing command %s\n", arr[i]);
 		char ** arr_for_exec = parse_tokens(arr[i]); //malloced in function
 		//first entry should be path name.  Following entries will be options.
 		printf("in sequential, in loop\n");
@@ -235,6 +236,7 @@ void handle_commands(char** arr) {
 	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
 	modes when finished with command line.  That way, don't have to pass anything back
 	and forth for parallel or sequential code */
+		printf("parsing command: %s\n", arr[i]);
 		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 	//	printf("Arrived at location A\n");
@@ -378,7 +380,7 @@ int main(int argc, char **argv) {
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input);
-		parse_tokens(cmds[0]);
+		handle_commands(cmds);
 		printf(">>>");
 	}
 	printf("\n");
