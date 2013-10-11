@@ -29,11 +29,6 @@ int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
 	         
-struct node{
-	char* path;
-	char** args;
-	struct node* next;
-};
 
 //Brett
 int is_space_or_semi(char target){
@@ -120,7 +115,6 @@ char** parse_tokens(char* token){
 		str = strtok(NULL, delim);
 	}
 	argv[i] = NULL;
-	print_chararr(argv);
 	return argv;	
 
 }
@@ -250,7 +244,6 @@ void handle_commands(char** arr) {
 	//		printf("Entered mode else if statement.\n");
 	//		printf("exec[0] is %s\n", arr_for_exec[0]);
 			if(arr_for_exec[1] != NULL) {
-				printf("mode: %s\n", arr_for_exec[1]);
 				if(strcasecmp(arr_for_exec[1], "p") ==0) {
 					mode = 'p';	
 				}
