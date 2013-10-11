@@ -29,11 +29,6 @@ int parallel=0; /*B: flag for what mode we're running in
 	          1: process things in parallel (actually, any nonzero)
 	          0: process sequentially */
 	         
-struct node{
-	char* path;
-	char** args;
-	struct node* next;
-};
 
 //Brett
 int is_space_or_semi(char target){
@@ -120,7 +115,6 @@ char** parse_tokens(char* token){
 		str = strtok(NULL, delim);
 	}
 	argv[i] = NULL;
-	print_chararr(argv);
 	return argv;	
 
 }
@@ -131,6 +125,7 @@ void run_command_s(char ** arr) { //sequential:
 	int i = 0;
 	int ret = 0;
 	while(arr[i] != NULL) {
+		printf("parsing command %s\n", arr[i]);
 		char ** arr_for_exec = parse_tokens(arr[i]); //malloced in function
 		//first entry should be path name.  Following entries will be options.
 		printf("in sequential, in loop\n");
@@ -236,6 +231,7 @@ void handle_commands(char** arr) {
 	modes when finished with command line.  That way, don't have to pass anything back
 	and forth for parallel or sequential code */
 		printf("passing %s into parse_tokens\n", arr[i]);
+		printf("parsing command: %s\n", arr[i]);
 		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 	//	printf("Arrived at location A\n");
@@ -252,7 +248,6 @@ void handle_commands(char** arr) {
 			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
 			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
 			if(arr_for_exec[1] != NULL) {
-				printf("mode: %s\n", arr_for_exec[1]);
 				if(strcasecmp(arr_for_exec[1], "p") ==0) {
 					mode = 'p';	
 				}
