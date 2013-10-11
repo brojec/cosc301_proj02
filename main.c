@@ -35,6 +35,69 @@ int is_space_or_semi(char target){
 	return isspace(target) || target==';';
 }
 
+//Carrie
+/*
+struct node() { //will create a linked list of processes
+	char ** arr_for_exec;
+	pid_t child_pid;
+	int * child_status;
+	struct node next = NULL;
+}
+
+//Carrie
+void check_process_p(struct node * head) {
+/*  Do the if statements for if node is first or last, blah blah
+cycle through nodes, check if waitpid(childpid, child_status, WNOHANG) is zero
+if it's zero, it's done.  Print out that it's done.
+Delete child from linked list
+*/
+	struct node * temp;
+	struct node * curr;
+	if(head==NULL) {
+		printf("There are no processes currently running.\n");
+	}
+	int check;
+	int check = waitpid(curr->child_pid, &(curr->child_status), WNOHANG); //check first node
+	if(check == -1) {
+		printf("Error with %s\n", (curr->arr_for_exec)[0]);
+	}
+	else if(check != 0) {
+		temp = head;
+		head = head-> next;
+		printf("Proccess call '%s' has finished.\n", (temp->arr_for_exec)[0]);
+		free(temp);
+	}
+	while(curr->next != NULL) {
+		int check = waitpid(curr->next->child_pid, &(curr->next->child_status), WNOHANG);
+		if(curr->next->next != NULL) { //if in middle
+			if(check == -1) { //if error
+				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				temp = curr -> next;
+				curr-> next = curr -> next -> next;
+				free(temp);
+			}
+			else if(check != 0) { //if process is done
+				temp = curr->next;
+				curr->next = curr -> next -> next;
+				printf("Proccess call '%s' has finished.\n",(temp->arr_for_exec)[0]);
+				free(temp);
+			}
+		}
+		else { //if curr->next->next == NULL: if at end
+			if(check == -1) {
+				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				free(curr->next);
+				curr->next = NULL;
+			}
+			else if(check !=0) {
+				printf("Proccess call '%s' has finished.\n",(curr->next->arr_for_exec)[0]);
+				free(curr->next);
+				curr->next = NULL;
+			}
+		}
+	curr = curr->next;		
+	}	
+}
 
 //Brett & Carrie
 void remove_whitespace(char* str){
@@ -164,8 +227,59 @@ void run_command_s(char ** arr) { //sequential:
 	}
 }
 
-//Carrie: haven't tested yet
+//Carrie, with linked list
+void run_command_p(char ** arr, struct node * head) { //parallel:
 
+	//need to have case to initialize linked list, and need to pass in potential head
+
+	int ret = 0;
+	int i =0;
+	struct node newnode;	
+	while(arr[i]!=NULL) {
+		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
+		in the function and includes a remove_whitespace */
+		//first entry should be path name.  Following entries will be options.	
+		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
+			pid_t child_pid;
+			int child_status;
+			child_pid = fork();
+			if(child_pid == 0) { //child
+				ret = execv(arr_for_exec[0], arr_for_exec);
+				//if execv returns, that means there was an error
+				if(ret == -1) {
+					printf("Error: Invalid Command\n");
+					exit(0);
+				}
+			newnode->arr_for_exec;
+			newnode->child_pid = child_pid;
+			newnode->child_status = &child_status;
+			if(head == NULL) {
+				head = newnode;
+				head -> next = NULL;
+			}
+			else{
+				newnode -> next = head;
+				head = newnode;
+			}
+			//need to add node to an existing linked list....
+			}
+		}
+		free(arr_for_exec); //*** should I be doing this here?
+		i++;
+	}
+	check process_p(head);
+	int count = 0;
+	while(checkarr[count] != NULL) {
+		pid_t tpid = wait(checkarr[count]); //this SHOULD check that they are all done
+		if(tpid == -1) { //if there was an error
+			printf("Error occured. \n");
+		}
+		count++;			
+	}
+}
+
+//Carrie
+/*  This is the code that worked before, but with an array/ not a linked list
 void run_command_p(char ** arr) { //parallel:
 	int j = 0;
 	int ret = 0;
@@ -174,7 +288,7 @@ void run_command_p(char ** arr) { //parallel:
 		j++;
 	}
 	int ** checkarr = (int **) malloc(sizeof(int *)*j); /*this will be used to keep
-	track of the statuses of the child processes as they run in parallel */	
+	track of the statuses of the child processes as they run in parallel ****
 	int i =0;	
 	while(arr[i]!=NULL) {
 		char ** arr_for_exec = parse_tokens(arr[i]); /* I believe this is malloced
@@ -186,7 +300,7 @@ void run_command_p(char ** arr) { //parallel:
 		}
 		else if(strncasecmp(arr_for_exec[0],"mode",4) == 0) {
 			continue;
-		}*/
+		} ****
 		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
 			pid_t child_pid;
 			int child_status;
@@ -219,10 +333,10 @@ void run_command_p(char ** arr) { //parallel:
 		}
 		count++;			
 	}
-}
+}  */
 
 //Brett and Mac and Carrie
-void handle_commands(char** arr) {
+void handle_commands(char** arr, struct node * head) {
 //	printf("Entered handle_commands\n");
 	int exitvar = 0;
 	char mode = '\0';
@@ -269,7 +383,7 @@ void handle_commands(char** arr) {
 		run_command_s(arr);
 	}
 	else { //if running parallel
-		run_command_p(arr);
+		run_command_p(arr, head);
 	}
 	if(mode == 'p') {
 		printf("arrived in p mode, mode set to %d\n", parallel);
@@ -374,11 +488,12 @@ char** tokenify(char* str){ //takes line of input from command line, breaking up
 //Brett
 int main(int argc, char **argv) {
 	char* input = (char*) malloc(sizeof(char)*255);
+	struct node * head;
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input);
 		parse_tokens(cmds[0]);
-		handle_commands(cmds);
+		handle_commands(cmds, head);
 		printf(">>>");
 	}
 	printf("\n");
