@@ -174,8 +174,9 @@ void print_chararr(char** arg){
 
 
 //Brett and Mac and Carrie
+
 void handle_commands(char** arr, struct node ** head) {
-//	printf("Entered handle_commands\n");
+//	//printf("Entered handle_commands\n");
 	int exitvar = 0;
 	char mode = '\0';
 	int i = 0;
@@ -185,50 +186,47 @@ void handle_commands(char** arr, struct node ** head) {
 	modes when finished with command line.  That way, don't have to pass anything back
 	and forth for parallel or sequential code */
 		
-		printf("passing %s into tokenify\n", arr[i]);
-		printf("parsing command: %s\n", arr[i]);
+		//printf("passing %s into tokenify\n", arr[i]);
+		//printf("parsing command: %s\n", arr[i]);
 		arr_for_exec = tokenify(arr[i],whitespace); /* I believe this is malloced
 		in the function and includes a remove_whitespace */
 		//print_chararr(arr_for_exec);
-		printf("For first arg from parse tokens, got %s\n", arr_for_exec[0]);
-		printf("For second arg from parse tokens, got %s\n", arr_for_exec[1]);
+		//printf("For first arg from parse tokens, got %s\n", arr_for_exec[0]);
+		//printf("For second arg from parse tokens, got %s\n", arr_for_exec[1]);
 
 		if(strcasecmp(arr_for_exec[0],"exit") == 0){
 			exitvar = 1;
 			freeall(arr_for_exec);
+
 		}
 
 		else if(strcasecmp(arr_for_exec[0],"mode") == 0){
 
-			//B: Changed this block so that default is displaying mode, 
-			//   to fit w/ project description 
-			printf("\narr_for_exec[0] is %s", arr_for_exec[0]);
-			printf("\narr_for_exec[1] is %s", arr_for_exec[1]);
 
 			if(arr_for_exec[1] != NULL) {
 				if(strcasecmp(arr_for_exec[1], "p") ==0 || strcasecmp(arr_for_exec[1], "parallel") ==0) {
 					mode = 'p';	
 				}
-				else if(strcasecmp(arr_for_exec[1], "s") == 0 || strcasecmp(arr_for_exec[1], "sequential") ==0) {
+				else if(strcasecmp(arr_for_exec[1], "s") == 0 || strcasecmp(arr_for_exec[1], "sequential") ==0){
 					mode = 's'; 
 				}else{
 					mode = 'd';
 				}
-
-			}
-			else {
+			}else{
 				mode = 'd';
 			}
+
 			freeall(arr_for_exec);
 		}
 		else {
 			if(arr_for_exec[0] == NULL){
-				printf("\nI FOUND IT I FOUND IT");
+				//printf("\nI FOUND IT I FOUND IT");
 			}
 			pid_t child_pid;
 			int child_status;
 			child_pid = fork();  //NEW CHILD STARTS HERE
 			int ret = 0;			
+
 			if(child_pid == 0) { //if child:
 				ret = execv(arr_for_exec[0], arr_for_exec);
 				//if execv returns, that means there was an error
@@ -236,6 +234,7 @@ void handle_commands(char** arr, struct node ** head) {
 					printf("Error: Command '%s' is invalid.\n", arr_for_exec[0]);
 					exit(0);
 				}
+
 			}
 			else { //if parent:
 				
@@ -248,7 +247,7 @@ void handle_commands(char** arr, struct node ** head) {
 				}
 				else if(parallel != 0){
 					if(arr_for_exec[0] == NULL){
-						printf("\nI FOUND IT I FOUND IT");
+						//printf("\nI FOUND IT I FOUND IT");
 					}
 					newnode = (struct node*)malloc(sizeof(struct node));
 					newnode->arr_for_exec = arr_for_exec;
@@ -263,7 +262,7 @@ void handle_commands(char** arr, struct node ** head) {
 						*head = newnode;
 					}
 				}
-				
+
 			}				
 		}
 		i++;
@@ -281,15 +280,15 @@ void handle_commands(char** arr, struct node ** head) {
 	if(mode == 'p') {
 		
 		parallel = 1; //global variable indicates operating in parallel
-		printf("\narrived in p mode, mode set to %d\n", parallel);
+		//printf("\narrived in p mode, mode set to %d\n", parallel);
 	}
 	else if(mode == 's') {
 		
 		parallel = 0; //global variable indicates operating sequentially
-		printf("\narrived in s mode, mode set to %d\n", parallel);
+		//printf("\narrived in s mode, mode set to %d\n", parallel);
 	}
 	else if(mode== 'd') {
-		printf("\narrived in display, mode set to %d\n", parallel);
+		//printf("\narrived in display, mode set to %d\n", parallel);
 		if(parallel == 0) {
 			printf("\nThe mode is currently sequential.\n");
 		}
@@ -369,17 +368,16 @@ char** tokenify(char* str, const char* delim){
 
 //Brett
 int main(int argc, char **argv) {
-	char* input = (char*)malloc(sizeof(char)*255);
+	char* input = (char*) malloc(sizeof(char)*1024);
 	struct node * head = NULL;
 	printf(">>>");
 	while(fgets(input, 255, stdin)!=NULL){
 		char ** cmds = tokenify(input,";");
 		handle_commands(cmds,&head);
-		printf("\n>>>");
+		printf(">>>");
 		freeall(cmds);
 	}
 	printf("\n");
-	free(input);
 	return 0;
 }
 
