@@ -49,63 +49,87 @@ struct node { //will create a linked list of processes
 };
 
 //Carrie
-void check_process_p(struct node * head) {
-/*  Do the if statements for if node is first or last, blah blah
-cycle through nodes, check if waitpid(childpid, child_status, WNOHANG) is zero
-if it's zero, it's done.  Print out that it's done.
-Delete child from linked list
-*/
-	printf("\nchecking the processes\n");
+void check_process_s(struct node *head) { //this will only ever be one node long.  
+//wait for process to finish, then kill node
+	if(head == NULL) {
+		printf("There are no proccesses currently running in sequential mode.\n\n");
+	}
+	pid_t tpid = waitpid(head->child_pid, head->child_status, 0);
+	if(tpid != head->child_pid) {
+		printf("Error with '%s'\n\n", (head->arr_for_exec)[0]);
+	}
+	free(head->arr_for_exec);
+	free(head);
+}
+	
+
+void check_process_p(struct node * head) { //this is purely to cycle through/ see which processes
+//are finished for parallel
+//	printf("\nchecking the processes\n");
 	struct node * temp;
 	struct node * curr = head;
 	if(head==NULL) {
-		printf("There are no processes currently running.\n");
+		printf("There are no processes currently running in parallel mode.\n\n");
 	}
-	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
-	printf("\nCheck is %d",check);
-	printf("\n");
-	if(check == -1) {
-		printf("\nError with child");
-		free(curr);
+
+	if(curr->next == NULL) {
+		int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); 
+		//check first node
+		if(check == -1) {
+			printf("Error with child\n\n");
+			free(curr->arr_for_exec);
+			free(curr);
+			curr = NULL;
+		}
+		else if(check != 0) {
+			//temp = head;
+			//head = head-> next;
+			printf("Proccess call '%s' has finished.\n\n", (curr->arr_for_exec)[0]);
+			free(curr->arr_for_exec);
+			free(curr);
+			curr = NULL;
+		}
 	}
-	else if(check != 0) {
-		temp = head;
-		head = head-> next;
-		printf("Proccess call '%s' has finished.\n", (temp->arr_for_exec)[0]);
-		free(temp);
-	}
-	while(curr->next != NULL) {
-		//printf("\nWaiting for SOMETHING");
+	while(curr != NULL && curr->next != NULL) {
 		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
 		printf("\nCheck is %d",check);  //This apparently doesnt happen?
 		if(curr->next->next != NULL) { //if in middle
 			if(check == -1) { //if error
-				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				printf("Error with %s\n\n", (curr->next->arr_for_exec)[0]);
 				temp = curr -> next;
 				curr-> next = curr -> next -> next;
+				free(temp->arr_for_exec);
 				free(temp);
 			}
 			else if(check != 0) { //if process is done
 				temp = curr->next;
 				curr->next = curr -> next -> next;
-				printf("Proccess call '%s' has finished.\n",(temp->arr_for_exec)[0]);
+				printf("Proccess call '%s' has finished.\n\n",(temp->arr_for_exec)[0]);
+				free(temp->arr_for_exec);
 				free(temp);
 			}
 		}
 		else { //if curr->next->next == NULL: if at end
 			if(check == -1) {
-				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				printf("Error with %s\n\n", (curr->next->arr_for_exec)[0]);
+				free(curr->next->arr_for_exec);
 				free(curr->next);
 				curr->next = NULL;
 			}
 			else if(check !=0) {
-				printf("Proccess call '%s' has finished.\n",(curr->next->arr_for_exec)[0]);
+				printf("Proccess call '%s' has finished.\n\n",(curr->next->arr_for_exec)[0]);
+				free(curr->next->arr_for_exec);
 				free(curr->next);
 				curr->next = NULL;
 			}
 		}
 	curr = curr->next;		
-	}	
+	}
+	printf("Exited loop once\n");
+	if(head != NULL) { //if we have proccesses still running, go through list again
+		check_process_p(head);
+	}
+	printf("Done with check_proccess_p\n");	
 }
 
 //Brett & Carrie
@@ -156,119 +180,13 @@ void print_chararr(char** arg){
 
 
 
-//Carrie: haven't tested yet
-void run_command_s(char ** arr) { //sequential:
-	int i = 0;
-	int ret = 0;
-	while(arr[i] != NULL) {
-		printf("parsing command %s\n", arr[i]);
-		char ** arr_for_exec = tokenify(arr[i],whitespace); //malloced in function
-		//first entry should be path name.  Following entries will be options.
-		printf("in sequential, in loop\n");
-		
-		/*if(strcasecmp(arr_for_exec[0],"exit") == 0){ //want to pass over exit commands here
-			printf("got an exit\n");
-			continue;
-		}
-		else if(strcasecmp(arr_for_exec[0],"mode") == 0) {
-			continue;
-		}*/
-		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
-		//else {
-			pid_t child_pid;
-			int child_status;
-			child_pid = fork();
-			if(child_pid == 0) { //if child:
-				//printf("\nIm a child!");
-				ret = execv(arr_for_exec[0], arr_for_exec);
-				//if execv returns, that means there was an error
-				
-				//****is it okay to set a NULL return?
-				if(ret== -1) {
-					printf("Error: Invalid Command\n");
-					exit(0);
-				}
-			}
-			else {
-				pid_t tpid = waitpid(child_pid, &child_status, 0); /*wait until child is done */
-				if(tpid !=child_pid) { //if not same, soemthing went wrong
-					printf("Error with %s\n", arr_for_exec[0]);
-				}
-			}
-		}
-		free(arr_for_exec);
-		i++;
-	}
-}
-
-//Carrie, with linked list
-void run_command_p(char ** arr, struct node * head) { //parallel:
-
-
-	//need to have case to initialize linked list, and need to pass in potential head
-	printf("\nRunning commands in parallel");
-	printf("\n");
-	int ret = 0;
-	int i =0;
-	struct node* newnode = (struct node*)malloc(sizeof(struct node));	
-	while(arr[i]!=NULL) {
-		char ** arr_for_exec = tokenify(arr[i],whitespace); /* I believe this is malloced
-		in the function and includes a remove_whitespace */
-		//first entry should be path name.  Following entries will be options.	
-		if((strcasecmp(arr_for_exec[0],"exit")!=0) && (strcasecmp(arr_for_exec[0],"mode") != 0)) {
-			pid_t child_pid;
-			int child_status;
-			child_pid = fork();
-			printf("\nPID = %d",child_pid);
-			if(child_pid == 0) { //child
-				printf("\nCHILD SHOULD DIE");
-				printf("\n");
-				ret = execv(arr_for_exec[0], arr_for_exec);
-				//if execv returns, that means there was an error
-				int status;
-				pid_t result = waitpid(child_pid, &status, WNOHANG);
-				if (result == 0) {
-  					printf("\nChild still alive");
-				} else if (result == -1) {
- 					 printf("\nError"); 
-				} else {
-					 printf("\nChild exited");
-				}
-				if(ret == -1) {
-					printf("Error: Invalid Command\n");
-					exit(0);
-				}
-				newnode->arr_for_exec = arr_for_exec;
-				newnode->child_pid = child_pid;
-				newnode->child_status = &child_status;
-				if(head == NULL) {
-					head = newnode;
-					head -> next = NULL;
-				}
-				else{
-					newnode -> next = head;
-					head = newnode;
-				}
-			//need to add node to an existing linked list....
-			}
-		}
-		free(arr_for_exec); //*** should I be doing this here?
-		i++;
-	}
-	//printf("\nGoing to check_process_p with PID of %d",child_pid);
-	check_process_p(head);
-	
-	
-}
-
-
-
 //Brett and Mac and Carrie
 void handle_commands(char** arr, struct node * head) {
 //	printf("Entered handle_commands\n");
 	int exitvar = 0;
 	char mode = '\0';
-	int i = 0;	
+	int i = 0;
+	struct node * newnode;	
 
 
 	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
@@ -310,6 +228,39 @@ void handle_commands(char** arr, struct node * head) {
 				mode = 'd';
 			}
 		}
+		else {
+			struct node* newnode = (struct node*)malloc(sizeof(struct node));
+			char ** arr_for_exec = tokenify(arr[i], whitespace);
+			pid_t child_pid;
+			int child_status;
+			child_pid = fork();
+			int ret = 0;
+			newnode->arr_for_exec = arr_for_exec;
+			newnode->child_pid = child_pid;
+			newnode->child_status = &child_status;
+			if(head == NULL) {
+				head = newnode;
+				head->next = NULL;
+			}
+			else {
+				newnode-> next = head;
+				head = newnode;
+			}
+			if(child_pid == 0) { //if child:
+				ret = execv(arr_for_exec[0], arr_for_exec);
+				//if execv returns, that means there was an error
+				if(ret == -1) {
+					printf("Error: Command '%s' is invalid.\n", arr_for_exec[0]);
+					exit(0);
+				}
+			}
+			else { //if parent:
+				if(parallel == 0) { //if sequential
+					check_process_s(newnode);
+				}
+			}
+				
+		}
 		i++;
 		printf("\nfreeing");
 		print_chararr(arr_for_exec);
@@ -318,6 +269,10 @@ void handle_commands(char** arr, struct node * head) {
 		printf("\nsuccessfully freed");
 		
 	}
+	if(parallel != 0) {
+		check_process_p(newnode);
+	}
+	/*
 	//This will go carry out the commands
 	if(parallel == 0) { //if running sequentially
 		run_command_s(arr);
@@ -326,6 +281,7 @@ void handle_commands(char** arr, struct node * head) {
 		run_command_p(arr, head);
 		//printf("\nWe stop runing run_command_p");
 	}
+	*/
 	if(mode == 'p') {
 		
 		parallel = 1; //global variable indicates operating in parallel
@@ -350,8 +306,6 @@ void handle_commands(char** arr, struct node * head) {
 	}	
 }
 
-
-//Brett & Carrie
 //Brett & Carrie
 int num_toks(char* str,const char* delim){  //remove delimiter tokens from front or end
 	if(str==NULL || strlen(str)==0)

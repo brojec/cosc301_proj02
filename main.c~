@@ -49,29 +49,35 @@ struct node { //will create a linked list of processes
 };
 
 //Carrie
-void check_process_p(struct node * head) {
-/*  Do the if statements for if node is first or last, blah blah
-cycle through nodes, check if waitpid(childpid, child_status, WNOHANG) is zero
-if it's zero, it's done.  Print out that it's done.
-Delete child from linked list
-*/
-	printf("\nchecking the processes\n");
+void check_process_s(struct node *head) { //this will only ever be one node long.  
+//wait for process to finish, then kill node
+	if(head == NULL) {
+		printf("There are no proccesses currently running in sequential mode.\n\n");
+	}
+	pid_t tpid = waitpid(head->child_pid, head->child_status, 0);
+	if(tpid != head->child_pid) {
+		printf("Error with '%s'\n\n", (head->arr_for_exec)[0]);
+	}
+	free(head->arr_for_exec);
+	free(head);
+}
+	
+
+void check_process_p(struct node * head) { //this is purely to cycle through/ see which processes
+//are finished for parallel
+//	printf("\nchecking the processes\n");
 	struct node * temp;
 	struct node * curr = head;
 	if(head==NULL) {
-		printf("There are no processes currently running.\n");
+		printf("There are no processes currently running in parallel mode.\n\n");
 	}
-	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
 <<<<<<< HEAD
+	int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); //check first node
 	printf("\nCheck is %d",check);
 	printf("\n");
 	if(check == -1) {
 		printf("\nError with child");
 		free(curr);
-=======
-	if(check == -1) {
-		printf("Error with child");
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	else if(check != 0) {
 		temp = head;
@@ -80,41 +86,67 @@ Delete child from linked list
 		free(temp);
 	}
 	while(curr->next != NULL) {
-<<<<<<< HEAD
 		//printf("\nWaiting for SOMETHING");
+=======
+	if(curr->next == NULL) {
+		int check = waitpid(curr->child_pid, (curr->child_status), WNOHANG); 
+		//check first node
+		if(check == -1) {
+			printf("Error with child\n\n");
+			free(curr->arr_for_exec);
+			free(curr);
+			curr = NULL;
+		}
+		else if(check != 0) {
+			//temp = head;
+			//head = head-> next;
+			printf("Proccess call '%s' has finished.\n\n", (curr->arr_for_exec)[0]);
+			free(curr->arr_for_exec);
+			free(curr);
+			curr = NULL;
+		}
+	}
+	while(curr != NULL && curr->next != NULL) {
+>>>>>>> 668dd549dbc93058aa6b013f2f954ac675425f51
 		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
 		printf("\nCheck is %d",check);  //This apparently doesnt happen?
-=======
-		int check = waitpid(curr->next->child_pid, (curr->next->child_status), WNOHANG);
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 		if(curr->next->next != NULL) { //if in middle
 			if(check == -1) { //if error
-				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				printf("Error with %s\n\n", (curr->next->arr_for_exec)[0]);
 				temp = curr -> next;
 				curr-> next = curr -> next -> next;
+				free(temp->arr_for_exec);
 				free(temp);
 			}
 			else if(check != 0) { //if process is done
 				temp = curr->next;
 				curr->next = curr -> next -> next;
-				printf("Proccess call '%s' has finished.\n",(temp->arr_for_exec)[0]);
+				printf("Proccess call '%s' has finished.\n\n",(temp->arr_for_exec)[0]);
+				free(temp->arr_for_exec);
 				free(temp);
 			}
 		}
 		else { //if curr->next->next == NULL: if at end
 			if(check == -1) {
-				printf("Error with %s\n", (curr->next->arr_for_exec)[0]);
+				printf("Error with %s\n\n", (curr->next->arr_for_exec)[0]);
+				free(curr->next->arr_for_exec);
 				free(curr->next);
 				curr->next = NULL;
 			}
 			else if(check !=0) {
-				printf("Proccess call '%s' has finished.\n",(curr->next->arr_for_exec)[0]);
+				printf("Proccess call '%s' has finished.\n\n",(curr->next->arr_for_exec)[0]);
+				free(curr->next->arr_for_exec);
 				free(curr->next);
 				curr->next = NULL;
 			}
 		}
 	curr = curr->next;		
-	}	
+	}
+	printf("Exited loop once\n");
+	if(head != NULL) { //if we have proccesses still running, go through list again
+		check_process_p(head);
+	}
+	printf("Done with check_proccess_p\n");	
 }
 
 //Brett & Carrie
@@ -164,6 +196,7 @@ void print_chararr(char** arg){
 }
 
 
+<<<<<<< HEAD
 
 //Carrie: haven't tested yet
 void run_command_s(char ** arr) { //sequential:
@@ -228,6 +261,7 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 			pid_t child_pid;
 			int child_status;
 			child_pid = fork();
+			printf("\nPID = %d",child_pid);
 			if(child_pid == 0) { //child
 				printf("\nCHILD SHOULD DIE");
 				printf("\n");
@@ -246,7 +280,6 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 					printf("Error: Invalid Command\n");
 					exit(0);
 				}
-<<<<<<< HEAD
 				newnode->arr_for_exec = arr_for_exec;
 				newnode->child_pid = child_pid;
 				newnode->child_status = &child_status;
@@ -258,29 +291,13 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 					newnode -> next = head;
 					head = newnode;
 				}
-=======
-			newnode->arr_for_exec = arr_for_exec;
-			newnode->child_pid = child_pid;
-			newnode->child_status = &child_status;
-			if(head == NULL) {
-				head = newnode;
-				head -> next = NULL;
-			}
-			else{
-				newnode -> next = head;
-				head = newnode;
-			}
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 			//need to add node to an existing linked list....
 			}
 		}
 		free(arr_for_exec); //*** should I be doing this here?
 		i++;
 	}
-<<<<<<< HEAD
 	//printf("\nGoing to check_process_p with PID of %d",child_pid);
-=======
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	check_process_p(head);
 	
 	
@@ -288,12 +305,15 @@ void run_command_p(char ** arr, struct node * head) { //parallel:
 
 
 
+=======
+>>>>>>> 668dd549dbc93058aa6b013f2f954ac675425f51
 //Brett and Mac and Carrie
 void handle_commands(char** arr, struct node * head) {
 //	printf("Entered handle_commands\n");
 	int exitvar = 0;
 	char mode = '\0';
-	int i = 0;	
+	int i = 0;
+	struct node * newnode;	
 
 
 	while(arr[i] != NULL){ /*this will purely go through and see if we need to exit or change
@@ -317,13 +337,8 @@ void handle_commands(char** arr, struct node * head) {
 			//B: Changed this block so that default is displaying mode, 
 			//   to fit w/ project description 
 		//	printf("Entered mode else if statement.\n");
-<<<<<<< HEAD
 			printf("\narr_for_exec[0] is %s", arr_for_exec[0]);
 			printf("\narr_for_exec[1] is %s", arr_for_exec[1]);
-=======
-			printf("arr_for_exec[0] is %s\n", arr_for_exec[0]);
-			printf("arr_for_exec[1] is %s\n", arr_for_exec[1]);
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 
 			if(arr_for_exec[1] != NULL) {
 				if(strcasecmp(arr_for_exec[1], "p") ==0 || strcasecmp(arr_for_exec[1], "parallel") ==0) {
@@ -340,50 +355,69 @@ void handle_commands(char** arr, struct node * head) {
 				mode = 'd';
 			}
 		}
+		else {
+			struct node* newnode = (struct node*)malloc(sizeof(struct node));
+			char ** arr_for_exec = tokenify(arr[i], whitespace);
+			pid_t child_pid;
+			int child_status;
+			child_pid = fork();
+			int ret = 0;
+			newnode->arr_for_exec = arr_for_exec;
+			newnode->child_pid = child_pid;
+			newnode->child_status = &child_status;
+			if(head == NULL) {
+				head = newnode;
+				head->next = NULL;
+			}
+			else {
+				newnode-> next = head;
+				head = newnode;
+			}
+			if(child_pid == 0) { //if child:
+				ret = execv(arr_for_exec[0], arr_for_exec);
+				//if execv returns, that means there was an error
+				if(ret == -1) {
+					printf("Error: Command '%s' is invalid.\n", arr_for_exec[0]);
+					exit(0);
+				}
+			}
+			else { //if parent:
+				if(parallel == 0) { //if sequential
+					check_process_s(newnode);
+				}
+			}
+				
+		}
 		i++;
-<<<<<<< HEAD
 		printf("\nfreeing");
 		print_chararr(arr_for_exec);
 		printf("\nsizeof arr_for_exec: %lu", sizeof(arr_for_exec));
 		free(arr_for_exec);
 		printf("\nsuccessfully freed");
-=======
-		printf("freeing\n");
-		print_chararr(arr_for_exec);
-		printf("sizeof arr_for_exec: %lu\n", sizeof(arr_for_exec));
-		free(arr_for_exec);
-		printf("successfully freed\n");
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 		
 	}
+	if(parallel != 0) {
+		check_process_p(newnode);
+	}
+	/*
 	//This will go carry out the commands
 	if(parallel == 0) { //if running sequentially
 		run_command_s(arr);
 	}
 	else { //if running parallel
 		run_command_p(arr, head);
-<<<<<<< HEAD
 		//printf("\nWe stop runing run_command_p");
-=======
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
+	*/
 	if(mode == 'p') {
 		
 		parallel = 1; //global variable indicates operating in parallel
-<<<<<<< HEAD
 		printf("\narrived in p mode, mode set to %d\n", parallel);
-=======
-		printf("arrived in p mode, mode set to %d\n", parallel);
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	else if(mode == 's') {
 		
 		parallel = 0; //global variable indicates operating sequentially
-<<<<<<< HEAD
 		printf("\narrived in s mode, mode set to %d\n", parallel);
-=======
-		printf("arrived in s mode, mode set to %d\n", parallel);
->>>>>>> 4770a2c2b5158ab37c47482955c1d273ee605ca3
 	}
 	else if(mode== 'd') {
 		printf("\narrived in display, mode set to %d\n", parallel);
@@ -399,8 +433,6 @@ void handle_commands(char** arr, struct node * head) {
 	}	
 }
 
-
-//Brett & Carrie
 //Brett & Carrie
 int num_toks(char* str,const char* delim){  //remove delimiter tokens from front or end
 	if(str==NULL || strlen(str)==0)
@@ -422,6 +454,8 @@ with a null-terminator, efectively chopping off the '#'
 and everything after it.  
 */
 void nullcomment(char* str) {
+	if(str==NULL || strlen(str)==0)
+		return;
 	int i = 0;
 	for(;str[i]!='\0';i++) {
 		if(str[i]=='#') {
